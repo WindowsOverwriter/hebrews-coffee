@@ -44,6 +44,11 @@ export async function getOrder(confirmationCode) {
   return handleResponse(res);
 }
 
+export async function getLocations() {
+  const res = await fetch(`${BASE_URL}/api/locations`);
+  return handleResponse(res);
+}
+
 // --- Admin ---
 
 export async function adminLogin(password) {
@@ -109,6 +114,48 @@ export async function updateSetting(key, value) {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify({ key, value })
+  });
+  return handleResponse(res);
+}
+
+export async function getAdminLocations() {
+  const res = await fetch(`${BASE_URL}/api/admin/locations`, {
+    headers: authHeaders()
+  });
+  return handleResponse(res);
+}
+
+export async function createLocation(name, address) {
+  const res = await fetch(`${BASE_URL}/api/admin/locations`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ name, address })
+  });
+  return handleResponse(res);
+}
+
+export async function updateLocation(id, data) {
+  const res = await fetch(`${BASE_URL}/api/admin/locations/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify(data)
+  });
+  return handleResponse(res);
+}
+
+export async function deleteLocation(id) {
+  const res = await fetch(`${BASE_URL}/api/admin/locations/${id}`, {
+    method: 'DELETE',
+    headers: authHeaders()
+  });
+  return handleResponse(res);
+}
+
+export async function setLocationDates(id, dates) {
+  const res = await fetch(`${BASE_URL}/api/admin/locations/${id}/dates`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ dates })
   });
   return handleResponse(res);
 }
