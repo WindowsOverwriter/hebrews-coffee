@@ -65,7 +65,9 @@
             temperature: item.customizations.temperature,
             espresso_type: item.customizations.espresso_type,
             milk_type: item.customizations.milk_type,
-            addons: item.customizations.addons
+            syrup: item.customizations.syrup || null,
+            syrup_pumps: item.customizations.syrup_pumps || null,
+            special_instructions: item.customizations.special_instructions || null
           }
         }))
       };

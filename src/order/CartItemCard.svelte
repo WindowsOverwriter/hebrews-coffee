@@ -7,8 +7,11 @@
     if (c.temperature) lines.push(c.temperature);
     if (c.espresso_type) lines.push(c.espresso_type);
     if (c.milk_type) lines.push(c.milk_type);
-    if (c.addons?.length) {
-      lines.push(...c.addons);
+    if (c.syrup) {
+      lines.push(`${c.syrup} Syrup (${c.syrup_pumps || 2} pumps)`);
+    }
+    if (c.special_instructions) {
+      lines.push(`"${c.special_instructions}"`);
     }
     return lines;
   });

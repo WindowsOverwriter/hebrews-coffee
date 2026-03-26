@@ -9,7 +9,9 @@ import { writable } from 'svelte/store';
 //     temperature: string,
 //     espresso_type: string,
 //     milk_type: string,
-//     addons: string[]
+//     syrup: string|null,
+//     syrup_pumps: number|null,
+//     special_instructions: string|null
 //   }
 // }
 export const cart = writable([]);

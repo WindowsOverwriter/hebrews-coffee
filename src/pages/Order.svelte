@@ -17,6 +17,16 @@
   let toastMessage = $state('');
   let toastVisible = $state(false);
   let codeCopied = $state(false);
+  let cartBounce = $state(false);
+
+  const loadingMessages = [
+    'Brewing the menu...',
+    'Warming up the espresso machine...',
+    'Steaming the milk...',
+    'Pulling a fresh shot...',
+  ];
+  let loadingMsgIndex = $state(0);
+  let loadingMsgInterval;
 
   // Subscribe to cart store
   const unsubscribeCart = cart.subscribe(items => {
@@ -35,12 +45,17 @@
       unsubscribeCart();
       unsubscribeDrinks();
       unsubscribeCustomizations();
+      clearInterval(loadingMsgInterval);
     };
   });
 
   async function loadMenu() {
     loading = true;
     error = '';
+    loadingMsgIndex = 0;
+    loadingMsgInterval = setInterval(() => {
+      loadingMsgIndex = (loadingMsgIndex + 1) % loadingMessages.length;
+    }, 1800);
     try {
       const data = await getMenu();
       drinks.set(data.drinks || []);
@@ -49,6 +64,7 @@
       error = 'Failed to load menu. Please try again.';
     } finally {
       loading = false;
+      clearInterval(loadingMsgInterval);
     }
   }
 
@@ -66,6 +82,8 @@
   function handleAddToCart(item) {
     cart.update(items => [...items, item]);
     showToast(`${item.drinkName} added to cart`);
+    cartBounce = true;
+    setTimeout(() => { cartBounce = false; }, 400);
     step = 'cart';
   }
 
@@ -87,6 +105,18 @@
     confirmationCode = code;
     cart.set([]);
     step = 'confirmation';
+    spawnSteam();
+  }
+
+  let steamParticles = $state([]);
+  function spawnSteam() {
+    steamParticles = Array.from({ length: 6 }, (_, i) => ({
+      id: i,
+      left: 30 + Math.random() * 40,
+      delay: i * 0.3 + Math.random() * 0.2,
+      duration: 2 + Math.random() * 1,
+      sway: (Math.random() - 0.5) * 20,
+    }));
   }
 
   function goToAddMore() {
@@ -120,7 +150,7 @@
       <header class="menu-header">
         <h1>Our Menu</h1>
         {#if cartItems.length > 0}
-          <button type="button" class="cart-badge" onclick={() => step = 'cart'} aria-label="View cart, {cartItems.length} items">
+          <button type="button" class="cart-badge" class:cart-bounce={cartBounce} onclick={() => step = 'cart'} aria-label="View cart, {cartItems.length} items">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="9" cy="21" r="1"></circle>
               <circle cx="20" cy="21" r="1"></circle>
@@ -138,7 +168,7 @@
             <span class="bean bean-2"></span>
             <span class="bean bean-3"></span>
           </div>
-          <p class="loading-text">Brewing the menu...</p>
+          <p class="loading-text" key={loadingMsgIndex}>{loadingMessages[loadingMsgIndex]}</p>
         </div>
       {:else if error}
         <div class="center-message">
@@ -182,7 +212,8 @@
 
       {#if cartItems.length === 0}
         <div class="center-message">
-          <p>Your cart is empty.</p>
+          <p class="empty-cart-title">Nothing here yet</p>
+          <p class="empty-cart-sub">Your next favorite drink is waiting on the menu.</p>
           <button type="button" class="retry-btn" onclick={handleBackToMenu}>Browse Menu</button>
         </div>
       {:else}
@@ -206,16 +237,26 @@
   {:else if step === 'confirmation'}
     <div class="confirmation-view step-enter">
       <div class="confirmation-card">
-        <div class="check-icon" aria-hidden="true">
-          <svg class="check-svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12"></polyline>
-          </svg>
+        <div class="check-icon-wrapper">
+          {#each steamParticles as p (p.id)}
+            <span
+              class="steam"
+              aria-hidden="true"
+              style="left: {p.left}%; animation-delay: {p.delay}s; animation-duration: {p.duration}s; --sway: {p.sway}px;"
+            ></span>
+          {/each}
+          <div class="check-icon" aria-hidden="true">
+            <svg class="check-svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
         </div>
-        <h1>Order Placed!</h1>
+        <h1 class="confirm-title">Order Placed!</h1>
         <p class="confirm-subtitle">Your confirmation code is</p>
         <button
           type="button"
           class="confirmation-code"
+          class:code-copied={codeCopied}
           onclick={copyCode}
           aria-label="Confirmation code: {confirmationCode}. Tap to copy."
           title="Tap to copy"
@@ -261,10 +302,11 @@
 
   /* ---- Toast ---- */
   @keyframes toastSlide {
-    0% { transform: translateX(-50%) translateY(-20px); opacity: 0; }
-    15% { transform: translateX(-50%) translateY(0); opacity: 1; }
-    85% { transform: translateX(-50%) translateY(0); opacity: 1; }
-    100% { transform: translateX(-50%) translateY(-20px); opacity: 0; }
+    0% { transform: translateX(-50%) translateY(-20px) scale(0.95); opacity: 0; }
+    12% { transform: translateX(-50%) translateY(4px) scale(1.02); opacity: 1; }
+    18% { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; }
+    82% { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateX(-50%) translateY(-20px) scale(0.95); opacity: 0; }
   }
 
   .toast {
@@ -311,9 +353,17 @@
   .bean-2 { animation-delay: 0.15s; }
   .bean-3 { animation-delay: 0.3s; }
 
+  @keyframes loadingFade {
+    0% { opacity: 0; transform: translateY(4px); }
+    20% { opacity: 1; transform: translateY(0); }
+    80% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-4px); }
+  }
+
   .loading-text {
     color: var(--color-brown-mid);
     font-style: italic;
+    animation: loadingFade 1.8s ease both;
   }
 
   /* ---- Menu View ---- */
@@ -359,6 +409,18 @@
 
   .cart-badge:active {
     transform: scale(0.95);
+  }
+
+  @keyframes cartWiggle {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(-8deg); }
+    50% { transform: rotate(6deg); }
+    75% { transform: rotate(-4deg); }
+    100% { transform: rotate(0deg); }
+  }
+
+  .cart-bounce {
+    animation: cartWiggle 0.4s ease;
   }
 
   .cart-badge:focus-visible {
@@ -467,6 +529,31 @@
     to { stroke-dashoffset: 0; }
   }
 
+  @keyframes steamRise {
+    0% {
+      opacity: 0;
+      transform: translateY(0) translateX(0) scaleX(1);
+    }
+    20% {
+      opacity: 0.5;
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-50px) translateX(var(--sway)) scaleX(1.5);
+    }
+  }
+
+  @keyframes confirmFadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes codePulse {
+    0% { box-shadow: 0 0 0 0 rgba(46, 125, 82, 0.4); }
+    70% { box-shadow: 0 0 0 8px rgba(46, 125, 82, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(46, 125, 82, 0); }
+  }
+
   .confirmation-view {
     display: flex;
     align-items: center;
@@ -481,6 +568,34 @@
     width: 100%;
   }
 
+  .code-copied {
+    animation: codePulse 0.6s ease;
+    border-color: var(--color-success);
+  }
+
+  .confirm-instruction {
+    animation: confirmFadeUp 0.4s ease 0.75s both;
+  }
+
+  .check-icon-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 80px;
+    height: 80px;
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .steam {
+    position: absolute;
+    bottom: 70%;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-brown-light);
+    opacity: 0;
+    animation: steamRise 2s ease-out forwards;
+  }
+
   .check-icon {
     display: inline-flex;
     align-items: center;
@@ -490,7 +605,6 @@
     border-radius: 50%;
     background: var(--color-success);
     color: white;
-    margin-bottom: var(--spacing-lg);
     animation: iconPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
   }
 
@@ -505,12 +619,14 @@
     font-size: 2rem;
     color: var(--color-brand-brown);
     margin: 0 0 var(--spacing-sm);
+    animation: confirmFadeUp 0.4s ease 0.3s both;
   }
 
   .confirm-subtitle {
     font-size: 1rem;
     color: var(--color-brown-mid);
     margin: 0 0 var(--spacing-md);
+    animation: confirmFadeUp 0.4s ease 0.45s both;
   }
 
   .confirmation-code {
@@ -527,7 +643,8 @@
     margin-bottom: var(--spacing-sm);
     user-select: all;
     cursor: pointer;
-    transition: background 0.2s ease, transform 0.1s ease;
+    transition: background 0.2s ease, transform 0.1s ease, border-color 0.3s ease;
+    animation: confirmFadeUp 0.4s ease 0.6s both;
   }
 
   .confirmation-code:hover {
@@ -549,10 +666,12 @@
     font-size: 0.9375rem;
     color: var(--color-brown-mid);
     margin: 0 0 var(--spacing-xl);
+    animation: confirmFadeUp 0.4s ease 0.75s both;
   }
 
   .check-order-link {
     display: inline-block;
+    animation: confirmFadeUp 0.4s ease 0.9s both;
     padding: 14px 32px;
     background: var(--color-brand-brown);
     color: var(--color-cream);
@@ -577,6 +696,20 @@
   .check-order-link:focus-visible {
     outline: 2px solid var(--color-brown-mid);
     outline-offset: 2px;
+  }
+
+  /* ---- Empty Cart ---- */
+  .empty-cart-title {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    color: var(--color-brand-brown);
+    font-weight: 600;
+  }
+
+  .empty-cart-sub {
+    color: var(--color-brown-light);
+    font-size: 0.9375rem;
+    margin-top: calc(-1 * var(--spacing-sm));
   }
 
   /* ---- Shared ---- */
@@ -666,7 +799,15 @@
     .step-enter,
     .check-icon,
     .badge-count,
-    .toast {
+    .toast,
+    .cart-bounce,
+    .steam,
+    .loading-text,
+    .confirmation-card h1,
+    .confirm-subtitle,
+    .confirmation-code,
+    .confirm-instruction,
+    .check-order-link {
       animation: none;
     }
     .check-svg polyline {

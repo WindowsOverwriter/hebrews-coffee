@@ -1,7 +1,6 @@
 <script>
   import SegmentedToggle from '../components/ui/SegmentedToggle.svelte';
   import CylinderPicker from '../components/ui/CylinderPicker.svelte';
-  import TogglePill from '../components/ui/TogglePill.svelte';
 
   let { drink, customizations, onAddToCart, onBack } = $props();
 
@@ -9,7 +8,12 @@
   let temperature = $state('');
   let espressoType = $state('');
   let milkType = $state('');
-  let addons = $state([]);
+  let syrup = $state('');
+  let syrupPumps = $state(2);
+  let specialInstructions = $state('');
+
+  const SYRUP_PUMPS_DEFAULT = 2;
+  const SYRUP_PUMPS_MAX = 6;
 
   // Derive available options from customizations prop
   let temperatureOptions = $derived(
@@ -21,8 +25,9 @@
   let milkOptions = $derived(
     (customizations.milk_type || []).map(c => c.label)
   );
-  let addonOptions = $derived(customizations.addon || []);
-
+  let syrupOptions = $derived(
+    (customizations.syrup || []).map(c => c.label)
+  );
   // Set defaults when options load
   $effect(() => {
     if (temperatureOptions.length && !temperature) {
@@ -40,12 +45,13 @@
     }
   });
 
-  function toggleAddon(label) {
-    if (addons.includes(label)) {
-      addons = addons.filter(a => a !== label);
-    } else {
-      addons = [...addons, label];
-    }
+  function selectSyrup(label) {
+    syrup = syrup === label ? '' : label;
+    if (!syrup) syrupPumps = SYRUP_PUMPS_DEFAULT;
+  }
+
+  function adjustPumps(delta) {
+    syrupPumps = Math.max(1, Math.min(SYRUP_PUMPS_MAX, syrupPumps + delta));
   }
 
   function handleAddToCart() {
@@ -57,7 +63,9 @@
         temperature,
         espresso_type: espressoType,
         milk_type: milkType,
-        addons: [...addons]
+        syrup: syrup || null,
+        syrup_pumps: syrup ? syrupPumps : null,
+        special_instructions: specialInstructions.trim() || null
       }
     });
   }
@@ -109,20 +117,64 @@
       </section>
     {/if}
 
-    {#if addonOptions.length > 0}
+    {#if syrupOptions.length > 0}
       <section class="option-group">
-        <h3 class="option-label" id="addons-label">Add-ons</h3>
-        <div class="addon-list" role="group" aria-labelledby="addons-label">
-          {#each addonOptions as addon}
-            <TogglePill
-              label={addon.label}
-              active={addons.includes(addon.label)}
-              onToggle={() => toggleAddon(addon.label)}
-            />
+        <h3 class="option-label" id="syrup-label">Syrup</h3>
+        <div class="syrup-list" role="radiogroup" aria-labelledby="syrup-label">
+          {#each syrupOptions as option}
+            <button
+              type="button"
+              class="syrup-chip"
+              class:active={syrup === option}
+              role="radio"
+              aria-checked={syrup === option}
+              onclick={() => selectSyrup(option)}
+            >
+              {option}
+            </button>
           {/each}
         </div>
+        {#if syrup}
+          <div class="pump-control">
+            <span class="pump-label">Pumps</span>
+            <div class="pump-stepper" role="group" aria-label="Syrup pumps">
+              <button
+                type="button"
+                class="pump-btn"
+                onclick={() => adjustPumps(-1)}
+                disabled={syrupPumps <= 1}
+                aria-label="Decrease pumps"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </button>
+              <span class="pump-value" aria-live="polite">{syrupPumps}</span>
+              <button
+                type="button"
+                class="pump-btn"
+                onclick={() => adjustPumps(1)}
+                disabled={syrupPumps >= SYRUP_PUMPS_MAX}
+                aria-label="Increase pumps"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </button>
+            </div>
+          </div>
+        {/if}
       </section>
     {/if}
+
+    <section class="option-group">
+      <label for="special-instructions" class="option-label">Special Instructions</label>
+      <textarea
+        id="special-instructions"
+        class="special-instructions"
+        bind:value={specialInstructions}
+        placeholder="Any special requests for your drink..."
+        maxlength="200"
+        rows="3"
+      ></textarea>
+      <p class="disclaimer">We do not have cold foams or whipped cream.</p>
+    </section>
   </div>
 
   <div class="custom-footer">
@@ -202,10 +254,137 @@
     margin: 0;
   }
 
-  .addon-list {
+  .syrup-list {
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
     gap: var(--spacing-sm);
+  }
+
+  .syrup-chip {
+    padding: 10px 16px;
+    border: 2px solid var(--color-brown-light);
+    border-radius: var(--radius-full);
+    background: transparent;
+    color: var(--color-brand-brown);
+    font-family: var(--font-body);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    min-height: var(--min-tap-target);
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  }
+
+  .syrup-chip:hover {
+    background: var(--color-cream);
+  }
+
+  .syrup-chip.active {
+    background: var(--color-brand-brown);
+    border-color: var(--color-brand-brown);
+    color: var(--color-cream);
+  }
+
+  .syrup-chip:focus-visible {
+    outline: 2px solid var(--color-brown-mid);
+    outline-offset: 2px;
+  }
+
+  .pump-control {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-sm) 0;
+  }
+
+  .pump-label {
+    font-family: var(--font-body);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-brown-mid);
+  }
+
+  .pump-stepper {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+  }
+
+  .pump-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: 2px solid var(--color-brown-light);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--color-brand-brown);
+    cursor: pointer;
+    transition: background 0.15s ease, opacity 0.15s ease;
+  }
+
+  .pump-btn:hover:not(:disabled) {
+    background: var(--color-cream);
+  }
+
+  .pump-btn:active:not(:disabled) {
+    background: var(--color-cream-hover);
+  }
+
+  .pump-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .pump-btn:focus-visible {
+    outline: 2px solid var(--color-brown-mid);
+    outline-offset: 2px;
+  }
+
+  .pump-value {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-brand-brown);
+    min-width: 32px;
+    text-align: center;
+  }
+
+  .special-instructions {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid var(--color-brown-light);
+    border-radius: var(--radius-md);
+    background: var(--color-white);
+    color: var(--color-brand-brown);
+    font-family: var(--font-body);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    resize: vertical;
+    min-height: 80px;
+    transition: border-color 0.2s ease;
+  }
+
+  .special-instructions::placeholder {
+    color: var(--color-brown-light);
+  }
+
+  .special-instructions:focus {
+    outline: none;
+    border-color: var(--color-brand-brown);
+  }
+
+  .special-instructions:focus-visible {
+    outline: 2px solid var(--color-brown-mid);
+    outline-offset: 2px;
+  }
+
+  .disclaimer {
+    font-family: var(--font-body);
+    font-size: 0.8125rem;
+    color: var(--color-brown-light);
+    font-style: italic;
+    margin: 0;
   }
 
   .custom-footer {
