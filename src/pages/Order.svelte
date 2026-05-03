@@ -93,10 +93,13 @@
   }
 
   function removeFromCart(index) {
-    cart.update(items => items.filter((_, i) => i !== index));
-    // If cart is now empty, go back to menu
-    const currentCart = cartItems;
-    if (currentCart.length <= 1) {
+    let newLength;
+    cart.update(items => {
+      const next = items.filter((_, i) => i !== index);
+      newLength = next.length;
+      return next;
+    });
+    if (newLength === 0) {
       step = 'menu';
     }
   }

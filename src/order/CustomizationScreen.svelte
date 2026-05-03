@@ -15,18 +15,22 @@
   const SYRUP_PUMPS_DEFAULT = 2;
   const SYRUP_PUMPS_MAX = 6;
 
-  // Derive available options from customizations prop
+  // Only show customization types attached to this drink (fall back to all if none set)
+  let drinkTypes = $derived(drink.customization_types || []);
+  let hasType = (type) => drinkTypes.length === 0 || drinkTypes.includes(type);
+
+  // Derive available options from customizations prop, filtered by drink's types
   let temperatureOptions = $derived(
-    (customizations.temperature || []).map(c => c.label)
+    hasType('temperature') ? (customizations.temperature || []).map(c => c.label) : []
   );
   let espressoOptions = $derived(
-    (customizations.espresso_type || []).map(c => c.label)
+    hasType('espresso_type') ? (customizations.espresso_type || []).map(c => c.label) : []
   );
   let milkOptions = $derived(
-    (customizations.milk_type || []).map(c => c.label)
+    hasType('milk_type') ? (customizations.milk_type || []).map(c => c.label) : []
   );
   let syrupOptions = $derived(
-    (customizations.syrup || []).map(c => c.label)
+    hasType('syrup') ? (customizations.syrup || []).map(c => c.label) : []
   );
   // Set defaults when options load
   $effect(() => {

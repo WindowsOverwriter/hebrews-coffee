@@ -100,7 +100,7 @@
         id="customer-name"
         type="text"
         bind:value={customerName}
-        placeholder="Your name"
+        placeholder="First and last name"
         required
         maxlength="100"
         autocomplete="name"
