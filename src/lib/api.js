@@ -76,6 +76,15 @@ export async function updateOrderStatus(id, status) {
   return handleResponse(res);
 }
 
+export async function createWalkupOrder(customerName, phoneNumber) {
+  const res = await fetch(`${BASE_URL}/api/admin/orders/walkup`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ customer_name: customerName, phone_number: phoneNumber })
+  });
+  return handleResponse(res);
+}
+
 export async function getTrends() {
   const res = await fetch(`${BASE_URL}/api/admin/trends`, {
     headers: authHeaders()
@@ -87,6 +96,39 @@ export async function resetPeriod() {
   const res = await fetch(`${BASE_URL}/api/admin/period/reset`, {
     method: 'POST',
     headers: authHeaders()
+  });
+  return handleResponse(res);
+}
+
+export async function getAdminMenu() {
+  const res = await fetch(`${BASE_URL}/api/admin/menu`, {
+    headers: authHeaders()
+  });
+  return handleResponse(res);
+}
+
+export async function createDrink(data) {
+  const res = await fetch(`${BASE_URL}/api/admin/drinks`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify(data)
+  });
+  return handleResponse(res);
+}
+
+export async function deleteDrink(id) {
+  const res = await fetch(`${BASE_URL}/api/admin/drinks/${id}`, {
+    method: 'DELETE',
+    headers: authHeaders()
+  });
+  return handleResponse(res);
+}
+
+export async function setDrinkCustomizationTypes(drinkId, types) {
+  const res = await fetch(`${BASE_URL}/api/admin/drinks/${drinkId}/customization-types`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ types })
   });
   return handleResponse(res);
 }
@@ -105,6 +147,13 @@ export async function toggleCustomization(id, enabled) {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify({ enabled })
+  });
+  return handleResponse(res);
+}
+
+export async function getSettings() {
+  const res = await fetch(`${BASE_URL}/api/admin/settings`, {
+    headers: authHeaders()
   });
   return handleResponse(res);
 }
