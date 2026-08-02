@@ -32,6 +32,20 @@
   let syrupOptions = $derived(
     hasType('syrup') ? (customizations.syrup || []).map(c => c.label) : []
   );
+  const SYRUP_NONE_LABEL = 'None';
+  let syrupWheelOptions = $derived(
+    syrupOptions.length ? [SYRUP_NONE_LABEL, ...syrupOptions] : []
+  );
+  let syrupWheelValue = $derived(syrup || SYRUP_NONE_LABEL);
+
+  function handleSyrupChange(next) {
+    if (next === SYRUP_NONE_LABEL) {
+      syrup = '';
+      syrupPumps = SYRUP_PUMPS_DEFAULT;
+    } else {
+      syrup = next;
+    }
+  }
   // Set defaults when options load
   $effect(() => {
     if (temperatureOptions.length && !temperature) {
@@ -48,11 +62,6 @@
       milkType = milkOptions[0];
     }
   });
-
-  function selectSyrup(label) {
-    syrup = syrup === label ? '' : label;
-    if (!syrup) syrupPumps = SYRUP_PUMPS_DEFAULT;
-  }
 
   function adjustPumps(delta) {
     syrupPumps = Math.max(1, Math.min(SYRUP_PUMPS_MAX, syrupPumps + delta));
@@ -123,21 +132,12 @@
 
     {#if syrupOptions.length > 0}
       <section class="option-group">
-        <h3 class="option-label" id="syrup-label">Syrup</h3>
-        <div class="syrup-list" role="radiogroup" aria-labelledby="syrup-label">
-          {#each syrupOptions as option}
-            <button
-              type="button"
-              class="syrup-chip"
-              class:active={syrup === option}
-              role="radio"
-              aria-checked={syrup === option}
-              onclick={() => selectSyrup(option)}
-            >
-              {option}
-            </button>
-          {/each}
-        </div>
+        <CylinderPicker
+          options={syrupWheelOptions}
+          value={syrupWheelValue}
+          onChange={handleSyrupChange}
+          label="Syrup"
+        />
         {#if syrup}
           <div class="pump-control">
             <span class="pump-label">Pumps</span>
@@ -256,41 +256,6 @@
     text-transform: uppercase;
     letter-spacing: 0.05em;
     margin: 0;
-  }
-
-  .syrup-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--spacing-sm);
-  }
-
-  .syrup-chip {
-    padding: 10px 16px;
-    border: 2px solid var(--color-brown-light);
-    border-radius: var(--radius-full);
-    background: transparent;
-    color: var(--color-brand-brown);
-    font-family: var(--font-body);
-    font-size: 0.9375rem;
-    font-weight: 600;
-    cursor: pointer;
-    min-height: var(--min-tap-target);
-    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-  }
-
-  .syrup-chip:hover {
-    background: var(--color-cream);
-  }
-
-  .syrup-chip.active {
-    background: var(--color-brand-brown);
-    border-color: var(--color-brand-brown);
-    color: var(--color-cream);
-  }
-
-  .syrup-chip:focus-visible {
-    outline: 2px solid var(--color-brown-mid);
-    outline-offset: 2px;
   }
 
   .pump-control {

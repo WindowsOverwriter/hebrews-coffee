@@ -2,6 +2,7 @@
   import { getSlots, submitOrder } from '../lib/api.js';
   import { cart } from '../stores/cart.js';
   import { get } from 'svelte/store';
+  import Dropdown from '../components/ui/Dropdown.svelte';
 
   let { itemCount, onOrderPlaced, onAddMore } = $props();
 
@@ -122,26 +123,20 @@
     </div>
 
     <div class="field">
-      <label for="pickup-slot-group">Pickup Time</label>
+      <label for="pickup-slot-trigger">Pickup Time</label>
       {#if loadingSlots}
         <p class="loading-text">Loading times...</p>
       {:else if slots.length === 0}
         <p class="error-text">No pickup times available</p>
       {:else}
-        <div class="slot-grid" role="radiogroup" aria-label="Pickup time" id="pickup-slot-group">
-          {#each slots as slot}
-            <button
-              type="button"
-              role="radio"
-              aria-checked={pickupSlot === slot}
-              class="slot-btn"
-              class:active={pickupSlot === slot}
-              onclick={() => pickupSlot = slot}
-            >
-              {slot}
-            </button>
-          {/each}
-        </div>
+        <Dropdown
+          id="pickup-slot-trigger"
+          options={slots}
+          value={pickupSlot}
+          onChange={(v) => pickupSlot = v}
+          ariaLabel="Pickup time"
+          placeholder="Choose a pickup time"
+        />
       {/if}
     </div>
 
@@ -254,41 +249,6 @@
     color: var(--color-brown-light);
   }
 
-  .slot-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--spacing-sm);
-  }
-
-  .slot-btn {
-    padding: 12px 8px;
-    border: 2px solid var(--color-cream);
-    border-radius: var(--radius-md);
-    background: var(--color-white);
-    font-family: var(--font-body);
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--color-brand-brown);
-    cursor: pointer;
-    min-height: var(--min-tap-target);
-    transition: all 0.2s ease;
-  }
-
-  .slot-btn.active {
-    background: var(--color-brand-brown);
-    border-color: var(--color-brand-brown);
-    color: var(--color-cream);
-  }
-
-  .slot-btn:not(.active):hover {
-    border-color: var(--color-brown-light);
-  }
-
-  .slot-btn:focus-visible {
-    outline: 2px solid var(--color-brown-mid);
-    outline-offset: 2px;
-  }
-
   .loading-text {
     font-family: var(--font-body);
     font-size: 0.875rem;
@@ -332,9 +292,4 @@
     outline-offset: 2px;
   }
 
-  @media (min-width: 768px) {
-    .slot-grid {
-      grid-template-columns: repeat(4, 1fr);
-    }
-  }
 </style>
