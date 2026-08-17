@@ -101,7 +101,7 @@
   .tab {
     padding: var(--spacing-sm) var(--spacing-xl);
     min-height: var(--min-tap-target);
-    font-family: var(--font-heading);
+    font-family: var(--font-body);
     font-size: 1.125rem;
     font-weight: 600;
     color: var(--color-brown-light);
