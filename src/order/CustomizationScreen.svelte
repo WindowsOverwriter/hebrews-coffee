@@ -94,6 +94,15 @@
     <h2 class="drink-title">{drink.name}</h2>
   </div>
 
+  <!-- M24: persistent live region for pump count so screen readers announce
+       updates from the initial value onward, not just after the +/- controls
+       are inserted into the DOM. -->
+  <div class="visually-hidden" role="status" aria-live="polite" aria-atomic="true">
+    {#if syrup}
+      {syrup}, {syrupPumps} pump{syrupPumps === 1 ? '' : 's'}
+    {/if}
+  </div>
+
   <div class="custom-body">
     {#if temperatureOptions.length > 0}
       <section class="option-group">

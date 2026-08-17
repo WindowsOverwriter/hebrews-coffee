@@ -8,6 +8,7 @@
   let ordersError = $state('');
   let ordersView = $state('queue'); // 'queue' | 'table'
   let updatingOrderId = $state(null);
+  let statusAnnouncement = $state('');
   let lookupQuery = $state('');
   let receivedCount = $derived(orders.filter(o => o.status === 'received').length);
   let lookupMatches = $derived.by(() => {
@@ -89,9 +90,11 @@
 
   async function markReceived(orderId) {
     updatingOrderId = orderId;
+    const target = orders.find(o => o.id === orderId);
     try {
       await updateOrderStatus(orderId, 'received');
       await loadOrders();
+      announceStatus(target ? `Order #${target.order_number} marked received` : 'Order marked received');
     } catch (e) {
       ordersError = e.message;
     }
@@ -100,13 +103,21 @@
 
   async function markCompleted(orderId) {
     updatingOrderId = orderId;
+    const target = orders.find(o => o.id === orderId);
     try {
       await updateOrderStatus(orderId, 'completed');
       await loadOrders();
+      announceStatus(target ? `Order #${target.order_number} marked complete` : 'Order marked complete');
     } catch (e) {
       ordersError = e.message;
     }
     updatingOrderId = null;
+  }
+
+  function announceStatus(message) {
+    // Clearing first ensures re-announcement when the same text fires twice in a row.
+    statusAnnouncement = '';
+    setTimeout(() => { statusAnnouncement = message; }, 50);
   }
 
   function drinkLabel(drinkName, customizations) {
@@ -135,6 +146,11 @@
 </script>
 
 <section class="admin-section">
+  <!-- M22: persistent live region so screen readers hear status changes -->
+  <div class="visually-hidden" role="status" aria-live="polite" aria-atomic="true">
+    {statusAnnouncement}
+  </div>
+
   {#if ordersError}
     <p class="error" role="alert">{ordersError}</p>
   {/if}

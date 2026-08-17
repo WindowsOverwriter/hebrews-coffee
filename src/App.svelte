@@ -1,5 +1,5 @@
 <script>
-  import { onMount, onDestroy } from 'svelte';
+  import { onMount, onDestroy, tick } from 'svelte';
   import NavBar from './components/layout/NavBar.svelte';
 
   // Pages
@@ -12,9 +12,11 @@
   // m19: init from the real hash at module load so a deep-link to
   // #/order etc. doesn't briefly render Landing before onMount runs.
   let currentRoute = $state(window.location.hash || '#/');
+  let hasUserNavigated = false;
 
   function handleHashChange() {
     currentRoute = window.location.hash || '#/';
+    hasUserNavigated = true;
   }
 
   onMount(() => {
@@ -23,6 +25,22 @@
 
   onDestroy(() => {
     window.removeEventListener('hashchange', handleHashChange);
+  });
+
+  // S9: After a user-initiated route change, move focus to the new page's h1
+  // so screen readers announce the transition. Skip the initial render.
+  $effect(() => {
+    currentRoute;
+    if (!hasUserNavigated) return;
+    tick().then(() => {
+      const main = document.getElementById('main-content');
+      const heading = main?.querySelector('h1');
+      if (!heading) return;
+      if (!heading.hasAttribute('tabindex')) {
+        heading.setAttribute('tabindex', '-1');
+      }
+      heading.focus({ preventScroll: false });
+    });
   });
 
   const isAdminRoute = $derived(

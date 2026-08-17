@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import { getMenu } from '../lib/api.js';
   import { cart } from '../stores/cart.js';
   import { drinks, customizations } from '../stores/menu.js';
@@ -109,6 +109,13 @@
     cart.set([]);
     step = 'confirmation';
     spawnSteam();
+    // S12: move focus to the confirmation heading so SR users hear the outcome
+    tick().then(() => {
+      const heading = document.querySelector('.confirm-title');
+      if (!heading) return;
+      if (!heading.hasAttribute('tabindex')) heading.setAttribute('tabindex', '-1');
+      heading.focus({ preventScroll: false });
+    });
   }
 
   let steamParticles = $state([]);
@@ -137,15 +144,19 @@
   }
 </script>
 
-<!-- Toast notification -->
-{#if toastVisible}
-  <div class="toast" role="status" aria-live="polite">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <polyline points="20 6 9 17 4 12"></polyline>
-    </svg>
-    {toastMessage}
-  </div>
-{/if}
+<!-- S11: Persistent live region — screen readers only reliably announce updates
+     to elements that were in the DOM at page load. The visible toast is
+     conditional inside; the aria-live wrapper is not. -->
+<div class="toast-region" role="status" aria-live="polite" aria-atomic="true">
+  {#if toastVisible}
+    <div class="toast">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+      {toastMessage}
+    </div>
+  {/if}
+</div>
 
 <main class="order-page" id="main-content">
   {#if step === 'menu'}
@@ -310,6 +321,15 @@
     18% { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; }
     82% { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; }
     100% { transform: translateX(-50%) translateY(-20px) scale(0.95); opacity: 0; }
+  }
+
+  .toast-region {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    pointer-events: none;
+    z-index: 200;
   }
 
   .toast {
