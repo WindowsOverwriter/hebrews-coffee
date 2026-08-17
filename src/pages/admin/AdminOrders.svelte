@@ -591,7 +591,11 @@
     margin-top: 4px;
   }
 
-  .btn-received {
+  /* Specificity bumped to .btn.btn-received so the generic .btn rule
+     defined later doesn't win on the shared props (min-height, font-size,
+     padding). Without this, the primary queue button rendered at 48px
+     / 0.9375rem instead of its intended 56px / 1.125rem. */
+  .btn.btn-received {
     width: 100%;
     background-color: var(--color-success);
     color: white;
@@ -603,7 +607,7 @@
     letter-spacing: 0.02em;
   }
 
-  .btn-received:active:not(:disabled) {
+  .btn.btn-received:active:not(:disabled) {
     transform: scale(0.98);
   }
 
