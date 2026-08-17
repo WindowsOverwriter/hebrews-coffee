@@ -709,8 +709,8 @@
   }
 
   .status-received {
-    background: #DBEAFE;
-    color: #1E40AF;
+    background: var(--color-brown-mid);
+    color: var(--color-cream);
   }
 
   .status-completed {
