@@ -32,7 +32,7 @@
     align-items: center;
     justify-content: space-between;
     padding: var(--spacing-sm) var(--spacing-lg);
-    min-height: 56px;
+    min-height: var(--nav-height);
   }
 
   .navbar-brand {
