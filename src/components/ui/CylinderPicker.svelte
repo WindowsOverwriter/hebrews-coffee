@@ -245,6 +245,12 @@
   }
 
   .cylinder-picker {
+    /* Center pill and each item share this width. Bumped from 120 to 160
+       so longer syrup labels like "Sugar-Free Vanilla" fit without the
+       centered-text-clipped-both-sides problem — text-overflow: ellipsis
+       only helps text that overflows in one direction. */
+    --cyl-item-width: 160px;
+    --cyl-far-offset: 260px;
     position: relative;
     height: 56px;
     overflow: hidden;
@@ -275,7 +281,7 @@
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    width: 120px;
+    width: var(--cyl-item-width);
     height: 42px;
     background: var(--color-brand-brown);
     border-radius: var(--radius-full);
@@ -311,7 +317,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 120px;
+    width: var(--cyl-item-width);
     font-family: var(--font-body);
     font-weight: 600;
     white-space: nowrap;
@@ -336,7 +342,7 @@
 
   .pos-prev {
     left: 50%;
-    transform: translateX(calc(-50% - 120px)) perspective(200px) rotateY(-30deg);
+    transform: translateX(calc(-50% - var(--cyl-item-width))) perspective(200px) rotateY(-30deg);
     font-size: 0.9375rem;
     color: var(--color-brown-mid);
     opacity: 0.7;
@@ -344,7 +350,7 @@
 
   .pos-next {
     left: 50%;
-    transform: translateX(calc(-50% + 120px)) perspective(200px) rotateY(30deg);
+    transform: translateX(calc(-50% + var(--cyl-item-width))) perspective(200px) rotateY(30deg);
     font-size: 0.9375rem;
     color: var(--color-brown-mid);
     opacity: 0.7;
@@ -352,7 +358,7 @@
 
   .pos-far-prev {
     left: 50%;
-    transform: translateX(calc(-50% - 220px)) perspective(200px) rotateY(-55deg);
+    transform: translateX(calc(-50% - var(--cyl-far-offset))) perspective(200px) rotateY(-55deg);
     font-size: 0.8125rem;
     color: var(--color-brown-light);
     opacity: 0.35;
@@ -360,7 +366,7 @@
 
   .pos-far-next {
     left: 50%;
-    transform: translateX(calc(-50% + 220px)) perspective(200px) rotateY(55deg);
+    transform: translateX(calc(-50% + var(--cyl-far-offset))) perspective(200px) rotateY(55deg);
     font-size: 0.8125rem;
     color: var(--color-brown-light);
     opacity: 0.35;
