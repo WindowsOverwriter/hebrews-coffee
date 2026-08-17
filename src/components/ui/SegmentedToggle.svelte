@@ -100,4 +100,13 @@
   .toggle-option.active:focus-visible {
     outline-color: var(--color-cream);
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    .slider {
+      transition: none;
+    }
+    .toggle-option {
+      transition: none;
+    }
+  }
 </style>

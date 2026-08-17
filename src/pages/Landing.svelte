@@ -270,6 +270,15 @@
     transform: scale(0.97);
   }
 
+  @media (prefers-reduced-motion: reduce) {
+    .cta {
+      transition: background-color 0.2s ease;
+    }
+    .cta:active {
+      transform: none;
+    }
+  }
+
   .cta-primary {
     background-color: var(--color-cream);
     color: var(--color-brand-brown);
