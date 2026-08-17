@@ -1,4 +1,9 @@
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+if (!BASE_URL) {
+  throw new Error(
+    'VITE_API_BASE_URL is not set. Add it to .env.local (dev) or your deploy environment config (production).'
+  );
+}
 
 import { get } from 'svelte/store';
 import { authToken } from '../stores/auth.js';
