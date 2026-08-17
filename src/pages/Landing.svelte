@@ -21,7 +21,10 @@
 
     for (let i = 1; i < sorted.length; i++) {
       const cur = toDate(sorted[i]);
-      const diff = (cur - end) / 86400000;
+      // M3: Math.round guards against DST transitions — day-to-day ms diff
+      // can be 23h or 25h across "spring forward" / "fall back", so a raw
+      // divide gives 0.958.../1.041... and breaks the === 1 check.
+      const diff = Math.round((cur - end) / 86400000);
       if (diff === 1) {
         end = cur;
       } else {
