@@ -78,19 +78,19 @@
 
     <div class="hero-beans" aria-hidden="true">
       <!-- Bottom-left cluster -->
-      <svg class="bean b1" viewBox="0 0 32 44"><ellipse cx="16" cy="22" rx="13" ry="20" fill="#5C3D1E" stroke="#2C1A0E" stroke-width="2"/><path d="M16 4 C12 14, 12 30, 16 40" fill="none" stroke="#2C1A0E" stroke-width="2.5" stroke-linecap="round"/><path d="M17.5 5 C13.5 15, 13.5 29, 17.5 39" fill="none" stroke="#A07850" stroke-width="1" stroke-linecap="round" opacity="0.5"/></svg>
-      <svg class="bean b2" viewBox="0 0 32 44"><ellipse cx="16" cy="22" rx="13" ry="20" fill="#5C3D1E" stroke="#2C1A0E" stroke-width="2"/><path d="M16 4 C12 14, 12 30, 16 40" fill="none" stroke="#2C1A0E" stroke-width="2.5" stroke-linecap="round"/><path d="M17.5 5 C13.5 15, 13.5 29, 17.5 39" fill="none" stroke="#A07850" stroke-width="1" stroke-linecap="round" opacity="0.5"/></svg>
-      <svg class="bean b3" viewBox="0 0 32 44"><ellipse cx="16" cy="22" rx="13" ry="20" fill="#5C3D1E" stroke="#2C1A0E" stroke-width="2"/><path d="M16 4 C12 14, 12 30, 16 40" fill="none" stroke="#2C1A0E" stroke-width="2.5" stroke-linecap="round"/><path d="M17.5 5 C13.5 15, 13.5 29, 17.5 39" fill="none" stroke="#A07850" stroke-width="1" stroke-linecap="round" opacity="0.5"/></svg>
-      <svg class="bean b4" viewBox="0 0 32 44"><ellipse cx="16" cy="22" rx="13" ry="20" fill="#5C3D1E" stroke="#2C1A0E" stroke-width="2"/><path d="M16 4 C12 14, 12 30, 16 40" fill="none" stroke="#2C1A0E" stroke-width="2.5" stroke-linecap="round"/><path d="M17.5 5 C13.5 15, 13.5 29, 17.5 39" fill="none" stroke="#A07850" stroke-width="1" stroke-linecap="round" opacity="0.5"/></svg>
+      <svg class="bean b1" viewBox="0 0 32 44"><ellipse cx="16" cy="22" rx="13" ry="20" stroke-width="2"/><path class="bean-crease" d="M16 4 C12 14, 12 30, 16 40" fill="none" stroke-width="2.5" stroke-linecap="round"/><path class="bean-highlight" d="M17.5 5 C13.5 15, 13.5 29, 17.5 39" fill="none" stroke-width="1" stroke-linecap="round" opacity="0.5"/></svg>
+      <svg class="bean b2" viewBox="0 0 32 44"><ellipse cx="16" cy="22" rx="13" ry="20" stroke-width="2"/><path class="bean-crease" d="M16 4 C12 14, 12 30, 16 40" fill="none" stroke-width="2.5" stroke-linecap="round"/><path class="bean-highlight" d="M17.5 5 C13.5 15, 13.5 29, 17.5 39" fill="none" stroke-width="1" stroke-linecap="round" opacity="0.5"/></svg>
+      <svg class="bean b3" viewBox="0 0 32 44"><ellipse cx="16" cy="22" rx="13" ry="20" stroke-width="2"/><path class="bean-crease" d="M16 4 C12 14, 12 30, 16 40" fill="none" stroke-width="2.5" stroke-linecap="round"/><path class="bean-highlight" d="M17.5 5 C13.5 15, 13.5 29, 17.5 39" fill="none" stroke-width="1" stroke-linecap="round" opacity="0.5"/></svg>
+      <svg class="bean b4" viewBox="0 0 32 44"><ellipse cx="16" cy="22" rx="13" ry="20" stroke-width="2"/><path class="bean-crease" d="M16 4 C12 14, 12 30, 16 40" fill="none" stroke-width="2.5" stroke-linecap="round"/><path class="bean-highlight" d="M17.5 5 C13.5 15, 13.5 29, 17.5 39" fill="none" stroke-width="1" stroke-linecap="round" opacity="0.5"/></svg>
       <!-- Bottom-right cluster -->
-      <svg class="bean b5" viewBox="0 0 32 44"><ellipse cx="16" cy="22" rx="13" ry="20" fill="#5C3D1E" stroke="#2C1A0E" stroke-width="2"/><path d="M16 4 C12 14, 12 30, 16 40" fill="none" stroke="#2C1A0E" stroke-width="2.5" stroke-linecap="round"/><path d="M17.5 5 C13.5 15, 13.5 29, 17.5 39" fill="none" stroke="#A07850" stroke-width="1" stroke-linecap="round" opacity="0.5"/></svg>
-      <svg class="bean b6" viewBox="0 0 32 44"><ellipse cx="16" cy="22" rx="13" ry="20" fill="#5C3D1E" stroke="#2C1A0E" stroke-width="2"/><path d="M16 4 C12 14, 12 30, 16 40" fill="none" stroke="#2C1A0E" stroke-width="2.5" stroke-linecap="round"/><path d="M17.5 5 C13.5 15, 13.5 29, 17.5 39" fill="none" stroke="#A07850" stroke-width="1" stroke-linecap="round" opacity="0.5"/></svg>
-      <svg class="bean b7" viewBox="0 0 32 44"><ellipse cx="16" cy="22" rx="13" ry="20" fill="#5C3D1E" stroke="#2C1A0E" stroke-width="2"/><path d="M16 4 C12 14, 12 30, 16 40" fill="none" stroke="#2C1A0E" stroke-width="2.5" stroke-linecap="round"/><path d="M17.5 5 C13.5 15, 13.5 29, 17.5 39" fill="none" stroke="#A07850" stroke-width="1" stroke-linecap="round" opacity="0.5"/></svg>
-      <svg class="bean b8" viewBox="0 0 32 44"><ellipse cx="16" cy="22" rx="13" ry="20" fill="#5C3D1E" stroke="#2C1A0E" stroke-width="2"/><path d="M16 4 C12 14, 12 30, 16 40" fill="none" stroke="#2C1A0E" stroke-width="2.5" stroke-linecap="round"/><path d="M17.5 5 C13.5 15, 13.5 29, 17.5 39" fill="none" stroke="#A07850" stroke-width="1" stroke-linecap="round" opacity="0.5"/></svg>
+      <svg class="bean b5" viewBox="0 0 32 44"><ellipse cx="16" cy="22" rx="13" ry="20" stroke-width="2"/><path class="bean-crease" d="M16 4 C12 14, 12 30, 16 40" fill="none" stroke-width="2.5" stroke-linecap="round"/><path class="bean-highlight" d="M17.5 5 C13.5 15, 13.5 29, 17.5 39" fill="none" stroke-width="1" stroke-linecap="round" opacity="0.5"/></svg>
+      <svg class="bean b6" viewBox="0 0 32 44"><ellipse cx="16" cy="22" rx="13" ry="20" stroke-width="2"/><path class="bean-crease" d="M16 4 C12 14, 12 30, 16 40" fill="none" stroke-width="2.5" stroke-linecap="round"/><path class="bean-highlight" d="M17.5 5 C13.5 15, 13.5 29, 17.5 39" fill="none" stroke-width="1" stroke-linecap="round" opacity="0.5"/></svg>
+      <svg class="bean b7" viewBox="0 0 32 44"><ellipse cx="16" cy="22" rx="13" ry="20" stroke-width="2"/><path class="bean-crease" d="M16 4 C12 14, 12 30, 16 40" fill="none" stroke-width="2.5" stroke-linecap="round"/><path class="bean-highlight" d="M17.5 5 C13.5 15, 13.5 29, 17.5 39" fill="none" stroke-width="1" stroke-linecap="round" opacity="0.5"/></svg>
+      <svg class="bean b8" viewBox="0 0 32 44"><ellipse cx="16" cy="22" rx="13" ry="20" stroke-width="2"/><path class="bean-crease" d="M16 4 C12 14, 12 30, 16 40" fill="none" stroke-width="2.5" stroke-linecap="round"/><path class="bean-highlight" d="M17.5 5 C13.5 15, 13.5 29, 17.5 39" fill="none" stroke-width="1" stroke-linecap="round" opacity="0.5"/></svg>
       <!-- Sparse upper scatter -->
-      <svg class="bean b9" viewBox="0 0 32 44"><ellipse cx="16" cy="22" rx="13" ry="20" fill="#5C3D1E" stroke="#2C1A0E" stroke-width="2"/><path d="M16 4 C12 14, 12 30, 16 40" fill="none" stroke="#2C1A0E" stroke-width="2.5" stroke-linecap="round"/><path d="M17.5 5 C13.5 15, 13.5 29, 17.5 39" fill="none" stroke="#A07850" stroke-width="1" stroke-linecap="round" opacity="0.5"/></svg>
-      <svg class="bean b10" viewBox="0 0 32 44"><ellipse cx="16" cy="22" rx="13" ry="20" fill="#5C3D1E" stroke="#2C1A0E" stroke-width="2"/><path d="M16 4 C12 14, 12 30, 16 40" fill="none" stroke="#2C1A0E" stroke-width="2.5" stroke-linecap="round"/><path d="M17.5 5 C13.5 15, 13.5 29, 17.5 39" fill="none" stroke="#A07850" stroke-width="1" stroke-linecap="round" opacity="0.5"/></svg>
-      <svg class="bean b11" viewBox="0 0 32 44"><ellipse cx="16" cy="22" rx="13" ry="20" fill="#5C3D1E" stroke="#2C1A0E" stroke-width="2"/><path d="M16 4 C12 14, 12 30, 16 40" fill="none" stroke="#2C1A0E" stroke-width="2.5" stroke-linecap="round"/><path d="M17.5 5 C13.5 15, 13.5 29, 17.5 39" fill="none" stroke="#A07850" stroke-width="1" stroke-linecap="round" opacity="0.5"/></svg>
+      <svg class="bean b9" viewBox="0 0 32 44"><ellipse cx="16" cy="22" rx="13" ry="20" stroke-width="2"/><path class="bean-crease" d="M16 4 C12 14, 12 30, 16 40" fill="none" stroke-width="2.5" stroke-linecap="round"/><path class="bean-highlight" d="M17.5 5 C13.5 15, 13.5 29, 17.5 39" fill="none" stroke-width="1" stroke-linecap="round" opacity="0.5"/></svg>
+      <svg class="bean b10" viewBox="0 0 32 44"><ellipse cx="16" cy="22" rx="13" ry="20" stroke-width="2"/><path class="bean-crease" d="M16 4 C12 14, 12 30, 16 40" fill="none" stroke-width="2.5" stroke-linecap="round"/><path class="bean-highlight" d="M17.5 5 C13.5 15, 13.5 29, 17.5 39" fill="none" stroke-width="1" stroke-linecap="round" opacity="0.5"/></svg>
+      <svg class="bean b11" viewBox="0 0 32 44"><ellipse cx="16" cy="22" rx="13" ry="20" stroke-width="2"/><path class="bean-crease" d="M16 4 C12 14, 12 30, 16 40" fill="none" stroke-width="2.5" stroke-linecap="round"/><path class="bean-highlight" d="M17.5 5 C13.5 15, 13.5 29, 17.5 39" fill="none" stroke-width="1" stroke-linecap="round" opacity="0.5"/></svg>
     </div>
   </section>
 
@@ -298,6 +298,19 @@
   .bean {
     position: absolute;
     opacity: 0.18;
+  }
+
+  .bean ellipse {
+    fill: var(--color-brown-mid);
+    stroke: var(--color-brand-brown);
+  }
+
+  .bean .bean-crease {
+    stroke: var(--color-brand-brown);
+  }
+
+  .bean .bean-highlight {
+    stroke: var(--color-brown-light);
   }
 
   /* Bottom-left cluster — dense, varied sizes and rotations */
