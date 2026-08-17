@@ -3,6 +3,7 @@
   import { getLocations } from '../lib/api.js';
 
   let locations = $state([]);
+  let locationsLoading = $state(true);
 
   function toDate(iso) {
     return new Date(iso + 'T00:00:00');
@@ -55,6 +56,8 @@
       locations = data.locations;
     } catch (e) {
       // Silently fail — section just won't show locations
+    } finally {
+      locationsLoading = false;
     }
   });
 </script>
@@ -125,10 +128,17 @@
   </section>
 
   <!-- Locations Section -->
-  {#if locations.length > 0}
+  {#if locationsLoading || locations.length > 0}
     <section class="locations" aria-labelledby="locations-heading">
       <div class="section-inner">
         <h2 class="section-heading" id="locations-heading">Find Us</h2>
+        {#if locationsLoading}
+          <div class="locations-loading" role="status" aria-live="polite">
+            <div class="location-skeleton" aria-hidden="true"></div>
+            <div class="location-skeleton" aria-hidden="true"></div>
+            <span class="visually-hidden">Loading locations…</span>
+          </div>
+        {/if}
         <div class="locations-grid">
           {#each locations as loc, li (loc.id)}
             {@const datesLabelId = `loc-${loc.id}-dates-label`}
@@ -474,6 +484,39 @@
     gap: var(--spacing-lg);
     max-width: 600px;
     margin: 0 auto;
+  }
+
+  .locations-loading {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .location-skeleton {
+    height: 140px;
+    border-radius: var(--radius-lg);
+    background: linear-gradient(
+      90deg,
+      var(--color-cream) 25%,
+      color-mix(in srgb, var(--color-cream) 55%, var(--color-white)) 50%,
+      var(--color-cream) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-pulse 1.4s ease-in-out infinite;
+  }
+
+  @keyframes skeleton-pulse {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .location-skeleton {
+      animation: none;
+      background: var(--color-cream);
+    }
   }
 
   .location-card {
