@@ -8,6 +8,10 @@ if (!BASE_URL) {
 import { get } from 'svelte/store';
 import { authToken } from '../stores/auth.js';
 
+// Render free-tier cold starts can take 30+ seconds; give a generous ceiling
+// before we tell the user the request timed out.
+const DEFAULT_TIMEOUT_MS = 45000;
+
 function authHeaders() {
   const token = get(authToken);
   return token ? { Authorization: `Bearer ${token}` } : {};
@@ -18,189 +22,185 @@ async function handleResponse(res) {
     const body = await res.json().catch(() => ({}));
     const err = new Error(body.error || `Request failed (${res.status})`);
     err.status = res.status;
+    err.code = 'http';
     throw err;
   }
   return res.json();
 }
 
+async function request(path, init = {}) {
+  const { timeout = DEFAULT_TIMEOUT_MS, ...fetchInit } = init;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeout);
+  try {
+    const res = await fetch(`${BASE_URL}${path}`, {
+      ...fetchInit,
+      signal: fetchInit.signal ?? controller.signal
+    });
+    return await handleResponse(res);
+  } catch (err) {
+    if (err.code === 'http') throw err;
+    if (err.name === 'AbortError') {
+      const wrapped = new Error('Request timed out. Please check your connection and try again.');
+      wrapped.code = 'timeout';
+      throw wrapped;
+    }
+    if (err instanceof TypeError) {
+      const wrapped = new Error('Network error. Please check your connection and try again.');
+      wrapped.code = 'network';
+      throw wrapped;
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 // --- Public ---
 
 export async function getMenu() {
-  const res = await fetch(`${BASE_URL}/api/menu`);
-  return handleResponse(res);
+  return request('/api/menu');
 }
 
 export async function getSlots() {
-  const res = await fetch(`${BASE_URL}/api/slots`);
-  return handleResponse(res);
+  return request('/api/slots');
 }
 
 export async function submitOrder(payload) {
-  const res = await fetch(`${BASE_URL}/api/orders`, {
+  return request('/api/orders', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
   });
-  return handleResponse(res);
 }
 
 export async function getOrder(confirmationCode) {
-  const res = await fetch(`${BASE_URL}/api/orders/${encodeURIComponent(confirmationCode)}`);
-  return handleResponse(res);
+  return request(`/api/orders/${encodeURIComponent(confirmationCode)}`);
 }
 
 export async function getLocations() {
-  const res = await fetch(`${BASE_URL}/api/locations`);
-  return handleResponse(res);
+  return request('/api/locations');
 }
 
 // --- Admin ---
 
 export async function adminLogin(password) {
-  const res = await fetch(`${BASE_URL}/api/admin/login`, {
+  return request('/api/admin/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ password })
   });
-  return handleResponse(res);
 }
 
 export async function getAdminOrders() {
-  const res = await fetch(`${BASE_URL}/api/admin/orders`, {
-    headers: authHeaders()
-  });
-  return handleResponse(res);
+  return request('/api/admin/orders', { headers: authHeaders() });
 }
 
 export async function updateOrderStatus(id, status) {
-  const res = await fetch(`${BASE_URL}/api/admin/orders/${id}/status`, {
+  return request(`/api/admin/orders/${id}/status`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify({ status })
   });
-  return handleResponse(res);
 }
 
 export async function getTrends() {
-  const res = await fetch(`${BASE_URL}/api/admin/trends`, {
-    headers: authHeaders()
-  });
-  return handleResponse(res);
+  return request('/api/admin/trends', { headers: authHeaders() });
 }
 
 export async function resetPeriod() {
-  const res = await fetch(`${BASE_URL}/api/admin/period/reset`, {
+  return request('/api/admin/period/reset', {
     method: 'POST',
-    headers: authHeaders()
+    headers: { 'Content-Type': 'application/json', ...authHeaders() }
   });
-  return handleResponse(res);
 }
 
 export async function getAdminMenu() {
-  const res = await fetch(`${BASE_URL}/api/admin/menu`, {
-    headers: authHeaders()
-  });
-  return handleResponse(res);
+  return request('/api/admin/menu', { headers: authHeaders() });
 }
 
 export async function createDrink(data) {
-  const res = await fetch(`${BASE_URL}/api/admin/drinks`, {
+  return request('/api/admin/drinks', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify(data)
   });
-  return handleResponse(res);
 }
 
 export async function deleteDrink(id) {
-  const res = await fetch(`${BASE_URL}/api/admin/drinks/${id}`, {
+  return request(`/api/admin/drinks/${id}`, {
     method: 'DELETE',
     headers: authHeaders()
   });
-  return handleResponse(res);
 }
 
 export async function setDrinkCustomizationTypes(drinkId, types) {
-  const res = await fetch(`${BASE_URL}/api/admin/drinks/${drinkId}/customization-types`, {
+  return request(`/api/admin/drinks/${drinkId}/customization-types`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify({ types })
   });
-  return handleResponse(res);
 }
 
 export async function toggleDrink(id, enabled) {
-  const res = await fetch(`${BASE_URL}/api/admin/drinks/${id}`, {
+  return request(`/api/admin/drinks/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify({ enabled })
   });
-  return handleResponse(res);
 }
 
 export async function toggleCustomization(id, enabled) {
-  const res = await fetch(`${BASE_URL}/api/admin/customizations/${id}`, {
+  return request(`/api/admin/customizations/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify({ enabled })
   });
-  return handleResponse(res);
 }
 
 export async function getSettings() {
-  const res = await fetch(`${BASE_URL}/api/admin/settings`, {
-    headers: authHeaders()
-  });
-  return handleResponse(res);
+  return request('/api/admin/settings', { headers: authHeaders() });
 }
 
 export async function updateSetting(key, value) {
-  const res = await fetch(`${BASE_URL}/api/admin/settings`, {
+  return request('/api/admin/settings', {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify({ key, value })
   });
-  return handleResponse(res);
 }
 
 export async function getAdminLocations() {
-  const res = await fetch(`${BASE_URL}/api/admin/locations`, {
-    headers: authHeaders()
-  });
-  return handleResponse(res);
+  return request('/api/admin/locations', { headers: authHeaders() });
 }
 
 export async function createLocation(name, address) {
-  const res = await fetch(`${BASE_URL}/api/admin/locations`, {
+  return request('/api/admin/locations', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify({ name, address })
   });
-  return handleResponse(res);
 }
 
 export async function updateLocation(id, data) {
-  const res = await fetch(`${BASE_URL}/api/admin/locations/${id}`, {
+  return request(`/api/admin/locations/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify(data)
   });
-  return handleResponse(res);
 }
 
 export async function deleteLocation(id) {
-  const res = await fetch(`${BASE_URL}/api/admin/locations/${id}`, {
+  return request(`/api/admin/locations/${id}`, {
     method: 'DELETE',
     headers: authHeaders()
   });
-  return handleResponse(res);
 }
 
 export async function setLocationDates(id, dates) {
-  const res = await fetch(`${BASE_URL}/api/admin/locations/${id}/dates`, {
+  return request(`/api/admin/locations/${id}/dates`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify({ dates })
   });
-  return handleResponse(res);
 }
