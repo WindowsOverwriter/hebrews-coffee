@@ -359,7 +359,6 @@
   }
 
   .special-instructions:focus {
-    outline: none;
     border-color: var(--color-brand-brown);
   }
 

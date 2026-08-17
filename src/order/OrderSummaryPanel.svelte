@@ -241,8 +241,12 @@
   }
 
   .field input:focus {
-    outline: none;
     border-color: var(--color-brand-brown);
+  }
+
+  .field input:focus-visible {
+    outline: 2px solid var(--color-brown-mid);
+    outline-offset: 2px;
   }
 
   .field input::placeholder {
