@@ -9,14 +9,15 @@
   import AdminLogin from './pages/AdminLogin.svelte';
   import AdminDashboard from './pages/AdminDashboard.svelte';
 
-  let currentRoute = $state('');
+  // m19: init from the real hash at module load so a deep-link to
+  // #/order etc. doesn't briefly render Landing before onMount runs.
+  let currentRoute = $state(window.location.hash || '#/');
 
   function handleHashChange() {
     currentRoute = window.location.hash || '#/';
   }
 
   onMount(() => {
-    handleHashChange();
     window.addEventListener('hashchange', handleHashChange);
   });
 

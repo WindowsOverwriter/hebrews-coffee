@@ -10,10 +10,6 @@
   // ─── Tab state ───
   let activeTab = $state('orders');
 
-  // Bumped when a period reset invalidates order data, so the Orders tab is
-  // rebuilt from scratch the next time it is shown.
-  let ordersVersion = $state(0);
-
   onMount(() => {
     if (!$authToken) {
       window.location.hash = '#/admin';
@@ -65,9 +61,7 @@
   </div>
 
   {#if activeTab === 'orders'}
-    {#key ordersVersion}
-      <AdminOrders />
-    {/key}
+    <AdminOrders />
   {:else if activeTab === 'locations'}
     <AdminLocations />
   {:else if activeTab === 'menu'}
@@ -75,7 +69,10 @@
   {:else if activeTab === 'settings'}
     <AdminSettings />
   {:else if activeTab === 'trends'}
-    <AdminTrends onOrdersInvalidated={() => ordersVersion++} />
+    <!-- m26: onOrdersInvalidated was a no-op — Orders tab already
+         remounts fresh via the {#if} unmount when the user switches
+         back to it, so no cross-tab signal is needed. -->
+    <AdminTrends />
   {/if}
 </main>
 

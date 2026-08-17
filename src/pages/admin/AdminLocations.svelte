@@ -9,7 +9,7 @@
   let locations = $state([]);
   let newName = $state('');
   let newAddress = $state('');
-  let error = $state('');
+  let locationsError = $state('');
   let saving = $state(false);
   let expandedId = $state(null);
 
@@ -26,21 +26,21 @@
       const data = await getAdminLocations();
       locations = data.locations;
     } catch (e) {
-      error = e.message;
+      locationsError = e.message;
     }
   }
 
   async function handleAdd() {
     if (!newName.trim() || !newAddress.trim()) return;
     saving = true;
-    error = '';
+    locationsError = '';
     try {
       await createLocation(newName.trim(), newAddress.trim());
       newName = '';
       newAddress = '';
       await loadLocations();
     } catch (e) {
-      error = e.message;
+      locationsError = e.message;
     }
     saving = false;
   }
@@ -50,7 +50,7 @@
       await updateLocation(loc.id, { active: !loc.active });
       await loadLocations();
     } catch (e) {
-      error = e.message;
+      locationsError = e.message;
     }
   }
 
@@ -61,7 +61,7 @@
       if (expandedId === loc.id) expandedId = null;
       await loadLocations();
     } catch (e) {
-      error = e.message;
+      locationsError = e.message;
     }
   }
 
@@ -70,7 +70,7 @@
       await updateLocation(loc.id, { delete_after: dateStr || null });
       await loadLocations();
     } catch (e) {
-      error = e.message;
+      locationsError = e.message;
     }
   }
 
@@ -130,7 +130,7 @@
       await setLocationDates(loc.id, newDates);
       await loadLocations();
     } catch (e) {
-      error = e.message;
+      locationsError = e.message;
     }
   }
 
@@ -144,8 +144,8 @@
 <section class="admin-section">
   <p class="section-desc">Manage locations and their operating dates. Tap a location to set its schedule.</p>
 
-  {#if error}
-    <p class="error" role="alert">{error}</p>
+  {#if locationsError}
+    <p class="error" role="alert">{locationsError}</p>
   {/if}
 
   <form class="add-form" onsubmit={(e) => { e.preventDefault(); handleAdd(); }}>
@@ -169,6 +169,7 @@
   {:else}
     <ul class="location-list">
       {#each locations as loc (loc.id)}
+        {@const upcomingCount = (loc.dates || []).filter(d => !isPast(d)).length}
         <li class="location-entry" class:inactive={!loc.active}>
           <div class="location-item">
             <button class="location-info-btn" onclick={() => toggleExpand(loc.id)}>
@@ -176,7 +177,7 @@
                 <strong>{loc.name}</strong>
                 <span class="location-address">{loc.address}</span>
                 <span class="date-count">
-                  {(loc.dates || []).filter(d => !isPast(d)).length} upcoming date{(loc.dates || []).filter(d => !isPast(d)).length === 1 ? '' : 's'}
+                  {upcomingCount} upcoming date{upcomingCount === 1 ? '' : 's'}
                 </span>
               </div>
               <span class="expand-arrow" class:expanded={expandedId === loc.id}>&#9660;</span>

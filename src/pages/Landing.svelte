@@ -192,6 +192,8 @@
     color: var(--color-cream);
     text-align: center;
     padding: var(--spacing-2xl) var(--spacing-lg);
+    /* M9: vh fallback for browsers without dvh support (older Safari) */
+    min-height: 85vh;
     min-height: 85dvh;
     display: flex;
     align-items: center;
@@ -535,6 +537,7 @@
   /* ─── Desktop Enhancements ─── */
   @media (min-width: 768px) {
     .hero {
+      min-height: 80vh;
       min-height: 80dvh;
     }
 

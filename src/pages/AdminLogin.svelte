@@ -24,8 +24,9 @@
       window.location.hash = '#/admin/dashboard';
     } catch (err) {
       error = err.message || 'Login failed.';
+    } finally {
+      loading = false;
     }
-    loading = false;
   }
 </script>
 
@@ -56,6 +57,7 @@
 
 <style>
   .admin-login {
+    min-height: 80vh;
     min-height: 80dvh;
     display: flex;
     align-items: center;
