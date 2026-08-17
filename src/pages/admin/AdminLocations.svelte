@@ -172,7 +172,12 @@
         {@const upcomingCount = (loc.dates || []).filter(d => !isPast(d)).length}
         <li class="location-entry" class:inactive={!loc.active}>
           <div class="location-item">
-            <button class="location-info-btn" onclick={() => toggleExpand(loc.id)}>
+            <button
+              class="location-info-btn"
+              aria-expanded={expandedId === loc.id}
+              aria-controls="location-panel-{loc.id}"
+              onclick={() => toggleExpand(loc.id)}
+            >
               <div class="location-info">
                 <strong>{loc.name}</strong>
                 <span class="location-address">{loc.address}</span>
@@ -191,7 +196,7 @@
           </div>
 
           {#if expandedId === loc.id}
-            <div class="location-expanded">
+            <div class="location-expanded" id="location-panel-{loc.id}">
               <!-- Scheduled deletion -->
               <div class="delete-schedule">
                 <label for="delete-after-{loc.id}">Auto-delete after:</label>
@@ -214,7 +219,7 @@
                   <span class="cal-title">{MONTH_NAMES[calendarMonth]} {calendarYear}</span>
                   <button class="cal-nav" onclick={nextMonth}>&rarr;</button>
                 </div>
-                <div class="cal-weekdays">
+                <div class="cal-weekdays" aria-hidden="true">
                   {#each ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'] as day}
                     <span class="cal-weekday">{day}</span>
                   {/each}
@@ -227,12 +232,13 @@
                     {@const dateStr = toIso(calendarYear, calendarMonth, i + 1)}
                     {@const isSelected = (loc.dates || []).includes(dateStr)}
                     {@const past = isPast(dateStr)}
+                    {@const dayName = new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long' })}
                     <button
                       class="cal-day"
                       class:selected={isSelected}
                       class:past={past}
                       disabled={past}
-                      aria-label="{MONTH_NAMES[calendarMonth]} {i + 1}, {calendarYear}"
+                      aria-label="{dayName}, {MONTH_NAMES[calendarMonth]} {i + 1}, {calendarYear}"
                       aria-pressed={isSelected}
                       onclick={() => toggleDate(loc, dateStr)}
                     >

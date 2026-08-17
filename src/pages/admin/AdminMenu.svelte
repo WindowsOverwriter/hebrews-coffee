@@ -113,10 +113,28 @@
   {:else}
     <!-- Add Drink -->
     <h3 class="menu-heading">Drinks</h3>
-    <form class="add-drink-form" onsubmit={(e) => { e.preventDefault(); handleAddDrink(); }}>
-      <input type="text" placeholder="Drink name" bind:value={newDrinkName} class="add-drink-input" />
-      <input type="text" placeholder="Description" bind:value={newDrinkDesc} class="add-drink-input" />
-      <input type="text" placeholder="Ratio summary (shown on menu card)" bind:value={newDrinkRatio} class="add-drink-input" />
+    <form class="add-drink-form" onsubmit={(e) => { e.preventDefault(); handleAddDrink(); }} aria-label="Add drink">
+      <input
+        type="text"
+        placeholder="Drink name"
+        aria-label="Drink name"
+        bind:value={newDrinkName}
+        class="add-drink-input"
+      />
+      <input
+        type="text"
+        placeholder="Description"
+        aria-label="Drink description"
+        bind:value={newDrinkDesc}
+        class="add-drink-input"
+      />
+      <input
+        type="text"
+        placeholder="Ratio summary (shown on menu card)"
+        aria-label="Ratio summary shown on menu card"
+        bind:value={newDrinkRatio}
+        class="add-drink-input"
+      />
       <button type="submit" class="btn btn-add-drink" disabled={addingDrink || !newDrinkName.trim()}>
         {addingDrink ? 'Adding...' : 'Add Drink'}
       </button>
@@ -127,7 +145,12 @@
       {#each menuDrinks as drink (drink.id)}
         <li class="menu-item-wrap">
           <div class="menu-item" class:disabled={!drink.enabled}>
-            <button class="menu-item-expand" onclick={() => expandedDrinkId = expandedDrinkId === drink.id ? null : drink.id}>
+            <button
+              class="menu-item-expand"
+              aria-expanded={expandedDrinkId === drink.id}
+              aria-controls="drink-panel-{drink.id}"
+              onclick={() => expandedDrinkId = expandedDrinkId === drink.id ? null : drink.id}
+            >
               <div class="menu-item-info">
                 <span class="menu-item-name">{drink.name}</span>
                 <span class="menu-item-desc">{drink.ratio_summary || drink.description}</span>
@@ -154,7 +177,7 @@
           </div>
 
           {#if expandedDrinkId === drink.id}
-            <div class="drink-types-panel">
+            <div class="drink-types-panel" id="drink-panel-{drink.id}">
               <p class="drink-types-label">Customization types for this drink:</p>
               <div class="drink-types-grid">
                 {#each ALL_CUSTOMIZATION_TYPES as type}

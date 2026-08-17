@@ -208,6 +208,9 @@
       <div class="fade-right" aria-hidden="true"></div>
     </div>
     <p id={hintId} class="cylinder-hint">Swipe or use arrow keys to change</p>
+    <!-- S15: aria-activedescendant on the listbox isn't reliably announced
+         by every AT, so mirror the current value in a plain live region. -->
+    <span class="visually-hidden" aria-live="polite" aria-atomic="true">{label}: {value}</span>
   {/if}
 </div>
 

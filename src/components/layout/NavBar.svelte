@@ -5,13 +5,23 @@
 <nav class="navbar">
   <div class="navbar-inner">
     <a href="#/" class="navbar-brand" aria-label="HeBrews Coffee home">
-      <img src="/logo.svg" alt="HeBrews Coffee" class="navbar-logo" />
+      <img src="/logo.svg" alt="" class="navbar-logo" />
       <span class="navbar-name">HeBrews</span>
     </a>
 
     <div class="navbar-links">
-      <a href="#/order" class="nav-link" class:active={currentRoute === '#/order'}>Order</a>
-      <a href="#/check" class="nav-link" class:active={currentRoute === '#/check'}>My Order</a>
+      <a
+        href="#/order"
+        class="nav-link"
+        class:active={currentRoute === '#/order'}
+        aria-current={currentRoute === '#/order' ? 'page' : undefined}
+      >Order</a>
+      <a
+        href="#/check"
+        class="nav-link"
+        class:active={currentRoute === '#/check'}
+        aria-current={currentRoute === '#/check' ? 'page' : undefined}
+      >My Order</a>
     </div>
   </div>
 </nav>

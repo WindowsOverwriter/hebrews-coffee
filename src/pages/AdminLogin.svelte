@@ -42,6 +42,8 @@
         bind:value={password}
         placeholder="Enter admin password"
         autocomplete="current-password"
+        required
+        aria-required="true"
       />
 
       {#if error}

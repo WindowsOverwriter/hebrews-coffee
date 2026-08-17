@@ -176,7 +176,7 @@
       </header>
 
       {#if loading}
-        <div class="center-message">
+        <div class="center-message" role="status" aria-live="polite">
           <div class="loading-indicator" aria-hidden="true">
             <span class="bean bean-1"></span>
             <span class="bean bean-2"></span>

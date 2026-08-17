@@ -61,13 +61,13 @@
 
 <main class="landing" id="main-content">
   <!-- Hero Section -->
-  <section class="hero">
+  <section class="hero" aria-labelledby="hero-title">
     <div class="hero-inner">
       <div class="logo-mark">
         <img src="/logo.svg" alt="HeBrews Coffee logo" class="hero-logo" />
       </div>
 
-      <h1 class="hero-title">HeBrews Coffee</h1>
+      <h1 class="hero-title" id="hero-title">HeBrews Coffee</h1>
       <p class="hero-tagline">Freshly brewed, made to order.</p>
 
       <div class="hero-ctas">
@@ -95,10 +95,10 @@
   </section>
 
   <!-- How It Works Section -->
-  <section class="how-it-works">
+  <section class="how-it-works" aria-labelledby="how-it-works-heading">
     <div class="section-inner">
-      <h2 class="section-heading">How It Works</h2>
-      <ol class="steps">
+      <h2 class="section-heading" id="how-it-works-heading">How It Works</h2>
+      <ol class="steps" role="list">
         <li class="step">
           <span class="step-number">1</span>
           <div class="step-content">
@@ -126,24 +126,26 @@
 
   <!-- Locations Section -->
   {#if locations.length > 0}
-    <section class="locations">
+    <section class="locations" aria-labelledby="locations-heading">
       <div class="section-inner">
-        <h2 class="section-heading">Find Us</h2>
+        <h2 class="section-heading" id="locations-heading">Find Us</h2>
         <div class="locations-grid">
-          {#each locations as loc (loc.id)}
+          {#each locations as loc, li (loc.id)}
+            {@const datesLabelId = `loc-${loc.id}-dates-label`}
             <div class="location-card">
               <h3>{loc.name}</h3>
               <address>{loc.address}</address>
               {#if loc.dates && loc.dates.length > 0}
                 {@const ranges = buildRanges(loc.dates)}
+                {@const extra = ranges.length - MAX_RANGES}
                 <div class="upcoming-dates">
-                  <span class="dates-label">Upcoming dates</span>
-                  <ul class="date-list">
+                  <span class="dates-label" id={datesLabelId}>Upcoming dates</span>
+                  <ul class="date-list" role="list" aria-labelledby={datesLabelId}>
                     {#each ranges.slice(0, MAX_RANGES) as r}
                       <li class="date-chip">{formatRange(r)}</li>
                     {/each}
-                    {#if ranges.length > MAX_RANGES}
-                      <li class="date-chip date-more">+{ranges.length - MAX_RANGES} more</li>
+                    {#if extra > 0}
+                      <li class="date-chip date-more" aria-label="{extra} more upcoming date{extra === 1 ? '' : 's'} not shown">+{extra} more</li>
                     {/if}
                   </ul>
                 </div>
@@ -156,9 +158,9 @@
   {/if}
 
   <!-- Bottom CTA -->
-  <section class="bottom-cta">
+  <section class="bottom-cta" aria-labelledby="bottom-cta-heading">
     <div class="section-inner">
-      <h2>Ready for a great cup?</h2>
+      <h2 id="bottom-cta-heading">Ready for a great cup?</h2>
       <a href="#/order" class="cta cta-primary">Order Now</a>
     </div>
   </section>
