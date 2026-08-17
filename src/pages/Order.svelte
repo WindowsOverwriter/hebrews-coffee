@@ -552,9 +552,9 @@
   }
 
   @keyframes codePulse {
-    0% { box-shadow: 0 0 0 0 rgba(46, 125, 82, 0.4); }
-    70% { box-shadow: 0 0 0 8px rgba(46, 125, 82, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(46, 125, 82, 0); }
+    0% { box-shadow: 0 0 0 0 var(--color-success-ring); }
+    70% { box-shadow: 0 0 0 8px transparent; }
+    100% { box-shadow: 0 0 0 0 transparent; }
   }
 
   .confirmation-view {
