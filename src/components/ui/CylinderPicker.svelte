@@ -42,6 +42,17 @@
     onChange(options[nextIndex]);
   }
 
+  // Neighbor slots only show a partial view; a naked cutoff can create
+  // ambiguity when a long label's visible portion matches another option
+  // (e.g. tail of "Sugar-Free Vanilla" reads as the sibling "Vanilla").
+  // A hard truncation with a trailing "…" guarantees a visible marker so
+  // users can tell truncated hints from real short labels.
+  const NEIGHBOR_MAX = 10;
+  function neighborLabel(text) {
+    if (text == null) return text;
+    return text.length > NEIGHBOR_MAX ? text.slice(0, NEIGHBOR_MAX - 1) + '…' : text;
+  }
+
   // Touch/mouse drag handling — horizontal
   function handlePointerDown(e) {
     dragging = true;
@@ -135,7 +146,7 @@
           onclick={() => rotateBy(-2)}
           aria-hidden="true"
         >
-          {optionAt(-2)}
+          {neighborLabel(optionAt(-2))}
         </button>
       {/if}
 
@@ -148,7 +159,7 @@
           onclick={() => rotateBy(-1)}
           aria-hidden="true"
         >
-          {optionAt(-1)}
+          {neighborLabel(optionAt(-1))}
         </button>
       {/if}
 
@@ -171,7 +182,7 @@
           onclick={() => rotateBy(1)}
           aria-hidden="true"
         >
-          {optionAt(1)}
+          {neighborLabel(optionAt(1))}
         </button>
       {/if}
 
@@ -184,7 +195,7 @@
           onclick={() => rotateBy(2)}
           aria-hidden="true"
         >
-          {optionAt(2)}
+          {neighborLabel(optionAt(2))}
         </button>
       {/if}
 
@@ -340,9 +351,15 @@
     cursor: default;
   }
 
+  /* Neighbor slots hug the center pill: text anchors to the edge that faces
+     the pill (right edge for prev, left edge for next) so long labels reveal
+     the segment adjacent to the selection instead of a random middle chunk.
+     Their outer end dissolves into the cream via the fade overlays below. */
   .pos-prev {
     left: 50%;
     transform: translateX(calc(-50% - var(--cyl-item-width))) perspective(200px) rotateY(-30deg);
+    justify-content: flex-end;
+    padding-right: 12px;
     font-size: 0.9375rem;
     color: var(--color-brown-mid);
     opacity: 0.7;
@@ -351,6 +368,8 @@
   .pos-next {
     left: 50%;
     transform: translateX(calc(-50% + var(--cyl-item-width))) perspective(200px) rotateY(30deg);
+    justify-content: flex-start;
+    padding-left: 12px;
     font-size: 0.9375rem;
     color: var(--color-brown-mid);
     opacity: 0.7;
@@ -359,6 +378,8 @@
   .pos-far-prev {
     left: 50%;
     transform: translateX(calc(-50% - var(--cyl-far-offset))) perspective(200px) rotateY(-55deg);
+    justify-content: flex-end;
+    padding-right: 12px;
     font-size: 0.8125rem;
     color: var(--color-brown-light);
     opacity: 0.35;
@@ -367,6 +388,8 @@
   .pos-far-next {
     left: 50%;
     transform: translateX(calc(-50% + var(--cyl-far-offset))) perspective(200px) rotateY(55deg);
+    justify-content: flex-start;
+    padding-left: 12px;
     font-size: 0.8125rem;
     color: var(--color-brown-light);
     opacity: 0.35;
@@ -382,13 +405,15 @@
     opacity: 0.5;
   }
 
-  /* Curved fade overlays — left and right */
+  /* Curved fade overlays — dissolve the outer end of neighbor labels into
+     the cream so the abrupt clip isn't visible. Neighbors are truncated
+     to NEIGHBOR_MAX chars with a "…" marker, so 55px of fade is enough. */
   .fade-left,
   .fade-right {
     position: absolute;
     top: 0;
     bottom: 0;
-    width: 50px;
+    width: 55px;
     z-index: 3;
     pointer-events: none;
   }
