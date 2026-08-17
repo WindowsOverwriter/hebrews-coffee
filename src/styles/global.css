@@ -48,6 +48,24 @@ input, textarea {
   font-size: inherit;
 }
 
+/* Global :focus-visible fallback — component rules with higher specificity still win. */
+:focus-visible {
+  outline: 2px solid var(--color-brown-mid);
+  outline-offset: 2px;
+}
+
+/* Focus rings for elements sitting on the brand-brown background need to be light. */
+.navbar :focus-visible,
+[data-focus-inverse] :focus-visible {
+  outline-color: var(--color-cream);
+}
+
+/* Programmatic focus on non-interactive headings should not draw a ring. */
+h1[tabindex="-1"]:focus,
+h2[tabindex="-1"]:focus {
+  outline: none;
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
