@@ -344,7 +344,7 @@
     background-color: var(--color-brown-mid);
     color: var(--color-cream);
     font-size: 0.8125rem;
-    min-height: 36px;
+    min-height: var(--min-tap-target);
     padding: var(--spacing-xs) var(--spacing-md);
   }
 
@@ -352,7 +352,7 @@
     background-color: var(--color-error);
     color: var(--color-cream);
     font-size: 0.8125rem;
-    min-height: 36px;
+    min-height: var(--min-tap-target);
     padding: var(--spacing-xs) var(--spacing-md);
   }
 
@@ -360,7 +360,7 @@
     background-color: var(--color-brown-light);
     color: var(--color-cream);
     font-size: 0.8125rem;
-    min-height: 36px;
+    min-height: var(--min-tap-target);
     padding: var(--spacing-xs) var(--spacing-md);
   }
 
@@ -479,7 +479,7 @@
     border: 1px solid var(--color-brown-light);
     border-radius: var(--radius-md);
     background-color: var(--color-white);
-    min-height: 36px;
+    min-height: var(--min-tap-target);
     font-size: 0.875rem;
     font-family: inherit;
   }
@@ -500,8 +500,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
+    width: var(--min-tap-target);
+    height: var(--min-tap-target);
     border-radius: var(--radius-md);
     background: none;
     border: 1px solid var(--color-brown-light);

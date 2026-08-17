@@ -437,7 +437,7 @@
   .view-btn {
     flex: 1;
     padding: var(--spacing-sm) var(--spacing-md);
-    min-height: 40px;
+    min-height: var(--min-tap-target);
     border: none;
     border-radius: var(--radius-md);
     background: transparent;
@@ -806,8 +806,8 @@
     right: 4px;
     top: 50%;
     transform: translateY(-50%);
-    width: 36px;
-    height: 36px;
+    width: var(--min-tap-target);
+    height: var(--min-tap-target);
     display: flex;
     align-items: center;
     justify-content: center;

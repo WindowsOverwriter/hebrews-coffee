@@ -78,6 +78,7 @@
     align-items: center;
     justify-content: center;
     min-height: var(--min-tap-target);
+    min-width: var(--min-tap-target);
     padding: var(--spacing-sm) var(--spacing-md);
     border-radius: var(--radius-full);
     font-family: var(--font-body);
