@@ -91,7 +91,12 @@
         <polyline points="15 18 9 12 15 6"></polyline>
       </svg>
     </button>
-    <h2 class="drink-title">{drink.name}</h2>
+    <div class="drink-heading">
+      <h2 class="drink-title">{drink.name}</h2>
+      {#if drink.ratio_summary}
+        <p class="drink-ratio">{drink.ratio_summary}</p>
+      {/if}
+    </div>
   </div>
 
   <!-- M24: persistent live region for pump count so screen readers announce
@@ -245,10 +250,24 @@
     outline-offset: 2px;
   }
 
+  .drink-heading {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
   .drink-title {
     font-family: var(--font-heading);
     font-size: 1.5rem;
     font-weight: 700;
+    margin: 0;
+  }
+
+  .drink-ratio {
+    font-family: var(--font-body);
+    font-size: 0.8125rem;
+    color: color-mix(in srgb, var(--color-cream) 75%, transparent);
     margin: 0;
   }
 
