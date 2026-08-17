@@ -258,7 +258,6 @@
     cursor: grab;
     user-select: none;
     touch-action: pan-y;
-    outline: none;
   }
 
   .cylinder-picker:focus-visible {
