@@ -1,8 +1,6 @@
 <script>
   import { onMount } from 'svelte';
-  import {
-    getAdminOrders, updateOrderStatus, createWalkupOrder
-  } from '../../lib/api.js';
+  import { getAdminOrders, updateOrderStatus } from '../../lib/api.js';
 
   // ─── Orders state ───
   let orders = $state([]);
@@ -24,11 +22,6 @@
       return false;
     });
   });
-  let walkupName = $state('');
-  let walkupPhone = $state('');
-  let walkupSaving = $state(false);
-  let walkupSuccessMsg = $state('');
-
   onMount(() => {
     loadOrders();
   });
@@ -114,22 +107,6 @@
       ordersError = e.message;
     }
     updatingOrderId = null;
-  }
-
-  async function submitWalkup() {
-    if (!walkupName.trim() || !walkupPhone.trim()) return;
-    walkupSaving = true;
-    walkupSuccessMsg = '';
-    try {
-      const data = await createWalkupOrder(walkupName.trim(), walkupPhone.trim());
-      walkupSuccessMsg = `#${data.order_number} — ${data.confirmation_code}`;
-      walkupName = '';
-      walkupPhone = '';
-      await loadOrders();
-    } catch (e) {
-      ordersError = e.message;
-    }
-    walkupSaving = false;
   }
 
   function drinkLabel(drinkName, customizations) {
@@ -290,33 +267,6 @@
             </li>
           {/each}
         </ul>
-      {/if}
-    </div>
-
-    <!-- ─── Walk-up Order ─── -->
-    <div class="walkup-section">
-      <h3 class="walkup-title">Walk-up Order</h3>
-      <form class="walkup-form" onsubmit={(e) => { e.preventDefault(); submitWalkup(); }}>
-        <input
-          class="walkup-input"
-          type="text"
-          placeholder="First and last name"
-          bind:value={walkupName}
-        />
-        <input
-          class="walkup-input"
-          type="tel"
-          placeholder="Phone number"
-          bind:value={walkupPhone}
-        />
-        <button
-          type="submit"
-          class="btn btn-walkup"
-          disabled={walkupSaving || !walkupName.trim() || !walkupPhone.trim()}
-        >{walkupSaving ? 'Saving...' : 'Add Walk-up'}</button>
-      </form>
-      {#if walkupSuccessMsg}
-        <p class="walkup-confirm">Added {walkupSuccessMsg}</p>
       {/if}
     </div>
 
@@ -910,64 +860,6 @@
     background: var(--color-white);
     padding: 2px 8px;
     border-radius: var(--radius-sm);
-  }
-
-  /* ─── Walk-up Order ─── */
-  .walkup-section {
-    margin-top: var(--spacing-xl);
-    padding-top: var(--spacing-xl);
-    border-top: 1px solid var(--color-brown-light);
-  }
-
-  .walkup-title {
-    font-family: var(--font-heading);
-    font-size: 1.125rem;
-    color: var(--color-brand-brown);
-    margin-bottom: var(--spacing-sm);
-  }
-
-  .walkup-form {
-    display: flex;
-    gap: var(--spacing-sm);
-    align-items: stretch;
-  }
-
-  .walkup-input {
-    flex: 1;
-    padding: var(--spacing-sm) var(--spacing-md);
-    border: 1px solid var(--color-brown-light);
-    border-radius: var(--radius-md);
-    background: var(--color-white);
-    min-height: var(--min-tap-target);
-    font-size: 1rem;
-    min-width: 0;
-  }
-
-  .walkup-input:focus {
-    outline: 2px solid var(--color-brand-brown);
-    outline-offset: 1px;
-  }
-
-  .btn-walkup {
-    background-color: var(--color-brown-mid);
-    color: var(--color-cream);
-    border-radius: var(--radius-md);
-    font-weight: 600;
-    white-space: nowrap;
-    padding: var(--spacing-sm) var(--spacing-lg);
-  }
-
-  .walkup-confirm {
-    margin-top: var(--spacing-sm);
-    font-size: 0.875rem;
-    color: var(--color-success);
-    font-weight: 600;
-  }
-
-  @media (max-width: 600px) {
-    .walkup-form {
-      flex-direction: column;
-    }
   }
 
   /* ─── Buttons ─── */

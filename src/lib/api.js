@@ -76,15 +76,6 @@ export async function updateOrderStatus(id, status) {
   return handleResponse(res);
 }
 
-export async function createWalkupOrder(customerName, phoneNumber) {
-  const res = await fetch(`${BASE_URL}/api/admin/orders/walkup`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...authHeaders() },
-    body: JSON.stringify({ customer_name: customerName, phone_number: phoneNumber })
-  });
-  return handleResponse(res);
-}
-
 export async function getTrends() {
   const res = await fetch(`${BASE_URL}/api/admin/trends`, {
     headers: authHeaders()
