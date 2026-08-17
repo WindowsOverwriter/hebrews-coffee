@@ -291,7 +291,7 @@
   .cta-secondary {
     background-color: transparent;
     color: var(--color-cream);
-    border: 2px solid var(--color-brown-light);
+    border: 2px solid color-mix(in srgb, var(--color-cream) 60%, transparent);
   }
 
   .cta-secondary:hover {
@@ -530,7 +530,7 @@
   }
 
   .date-more {
-    color: var(--color-brown-light);
+    color: var(--color-brown-mid);
     font-style: italic;
     border-style: dashed;
   }

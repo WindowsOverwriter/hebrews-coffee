@@ -84,7 +84,7 @@
     font-family: var(--font-body);
     font-size: 0.9375rem;
     font-weight: 500;
-    color: var(--color-brown-light);
+    color: var(--color-nav-inactive);
     text-decoration: none;
     transition: color 0.15s ease, background-color 0.15s ease;
     -webkit-tap-highlight-color: transparent;

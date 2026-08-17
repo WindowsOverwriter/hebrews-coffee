@@ -527,7 +527,7 @@
   .cal-weekday {
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--color-brown-light);
+    color: var(--color-brown-mid);
     padding: var(--spacing-xs) 0;
   }
 

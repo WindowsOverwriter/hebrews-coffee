@@ -680,7 +680,7 @@
 
   .copy-hint {
     font-size: 0.8125rem;
-    color: var(--color-brown-light);
+    color: var(--color-brown-mid);
     margin: 0 0 var(--spacing-lg);
     min-height: 1.2em;
   }
@@ -730,7 +730,7 @@
   }
 
   .empty-cart-sub {
-    color: var(--color-brown-light);
+    color: var(--color-brown-mid);
     font-size: 0.9375rem;
     margin-top: calc(-1 * var(--spacing-sm));
   }
