@@ -4,7 +4,7 @@
   import { get } from 'svelte/store';
   import Dropdown from '../components/ui/Dropdown.svelte';
 
-  let { itemCount, onOrderPlaced, onAddMore } = $props();
+  let { itemCount, onOrderPlaced, onAddMore, ordersAccepting = true } = $props();
 
   let customerName = $state('');
   let phoneNumber = $state('');
@@ -144,13 +144,19 @@
       <p class="error-text" role="alert">{error}</p>
     {/if}
 
+    {#if !ordersAccepting}
+      <p class="orders-closed-note">Orders are paused right now — check back soon.</p>
+    {/if}
+
     <button
       type="submit"
       class="place-order-btn"
-      disabled={!isValid || loading || slots.length === 0}
+      disabled={!isValid || loading || slots.length === 0 || !ordersAccepting}
     >
       {#if loading}
         Placing Order...
+      {:else if !ordersAccepting}
+        Orders Paused
       {:else}
         Place Order
       {/if}
@@ -265,6 +271,14 @@
     font-size: 0.875rem;
     color: var(--color-error);
     margin: 0;
+  }
+
+  .orders-closed-note {
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    color: var(--color-brown-mid);
+    margin: 0;
+    text-align: center;
   }
 
   .place-order-btn {

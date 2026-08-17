@@ -18,6 +18,7 @@
   let toastVisible = $state(false);
   let codeCopied = $state(false);
   let cartBounce = $state(false);
+  let ordersAccepting = $state(true);
 
   const loadingMessages = [
     'Brewing the menu...',
@@ -60,6 +61,9 @@
       const data = await getMenu();
       drinks.set(data.drinks || []);
       customizations.set(data.customizations || {});
+      // Default to true if the field is missing so older backend versions
+      // don't accidentally block ordering.
+      ordersAccepting = data.orders_accepting !== false;
     } catch (e) {
       error = 'Failed to load menu. Please try again.';
     } finally {
@@ -175,6 +179,17 @@
         {/if}
       </header>
 
+      {#if !loading && !ordersAccepting}
+        <div class="orders-closed-banner" role="status">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span>Orders are paused right now. You can still browse the menu — check back soon.</span>
+        </div>
+      {/if}
+
       {#if loading}
         <div class="center-message" role="status" aria-live="polite">
           <div class="loading-indicator" aria-hidden="true">
@@ -240,6 +255,7 @@
           <div class="cart-summary">
             <OrderSummaryPanel
               itemCount={cartItems.length}
+              {ordersAccepting}
               onOrderPlaced={handleOrderPlaced}
               onAddMore={goToAddMore}
             />
@@ -409,6 +425,26 @@
     font-weight: 700;
     color: var(--color-brand-brown);
     margin: 0;
+  }
+
+  .orders-closed-banner {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md) var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    background: var(--color-cream);
+    border: 1px solid var(--color-brown-mid);
+    border-left-width: 4px;
+    border-radius: var(--radius-md);
+    color: var(--color-brand-brown);
+    font-size: 0.9375rem;
+    font-weight: 500;
+  }
+
+  .orders-closed-banner svg {
+    flex-shrink: 0;
+    color: var(--color-brown-mid);
   }
 
   .cart-badge {
