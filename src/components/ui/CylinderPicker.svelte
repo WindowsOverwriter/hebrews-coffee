@@ -1,5 +1,5 @@
 <script>
-  let { options, value, onChange, label = '' } = $props();
+  let { options, value, onChange, label = '', labelledBy = '' } = $props();
 
   let selectedIndex = $derived(options.indexOf(value));
   let dragging = $state(false);
@@ -94,19 +94,24 @@
     }
   }
 
-  let labelId = $derived(`cyl-label-${label.replace(/\s+/g, '-').toLowerCase()}`);
+  let internalLabelId = $derived(`cyl-label-${label.replace(/\s+/g, '-').toLowerCase()}`);
+  let labelId = $derived(labelledBy || internalLabelId);
   let hintId = $derived(`cyl-hint-${label.replace(/\s+/g, '-').toLowerCase()}`);
 </script>
 
 <div class="cylinder-wrapper">
   {#if options.length <= 1}
     <!-- Static display for single option -->
-    <span class="cylinder-label" id={labelId}>{label}</span>
+    {#if !labelledBy}
+      <span class="cylinder-label" id={internalLabelId}>{label}</span>
+    {/if}
     <div class="cylinder-static" aria-labelledby={labelId}>
       {options[0] ?? '—'}
     </div>
   {:else}
-    <span class="cylinder-label" id={labelId}>{label}</span>
+    {#if !labelledBy}
+      <span class="cylinder-label" id={internalLabelId}>{label}</span>
+    {/if}
     <div
       class="cylinder-picker"
       role="listbox"

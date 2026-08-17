@@ -121,22 +121,26 @@
 
     {#if milkOptions.length > 0}
       <section class="option-group">
+        <h3 class="option-label" id="cust-milk-label">Milk</h3>
         <CylinderPicker
           options={milkOptions}
           value={milkType}
           onChange={(v) => milkType = v}
           label="Milk"
+          labelledBy="cust-milk-label"
         />
       </section>
     {/if}
 
     {#if syrupOptions.length > 0}
       <section class="option-group">
+        <h3 class="option-label" id="cust-syrup-label">Syrup</h3>
         <CylinderPicker
           options={syrupWheelOptions}
           value={syrupWheelValue}
           onChange={handleSyrupChange}
           label="Syrup"
+          labelledBy="cust-syrup-label"
         />
         {#if syrup}
           <div class="pump-control">
@@ -195,6 +199,9 @@
     min-height: 100dvh;
     min-height: 100vh;
     background: var(--color-white);
+    /* Footer height derives from the button's tap target + footer padding
+       so body padding stays in sync if either token changes. */
+    --footer-height: calc(var(--min-tap-target) + 2 * var(--spacing-md) + env(safe-area-inset-bottom, 0px));
   }
 
   .custom-header {
@@ -220,6 +227,10 @@
     flex-shrink: 0;
   }
 
+  .back-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+  }
+
   .back-btn:focus-visible {
     outline: 2px solid var(--color-cream);
     outline-offset: 2px;
@@ -239,7 +250,7 @@
     flex-direction: column;
     gap: var(--spacing-xl);
     overflow-y: auto;
-    padding-bottom: 100px; /* space for fixed footer */
+    padding-bottom: calc(var(--footer-height) + var(--spacing-md));
   }
 
   .option-group {
@@ -396,6 +407,15 @@
   .add-to-cart-btn:focus-visible {
     outline: 2px solid var(--color-brown-mid);
     outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .add-to-cart-btn,
+    .add-to-cart-btn:hover,
+    .add-to-cart-btn:active {
+      transform: none;
+      transition: background 0.2s ease;
+    }
   }
 
   @media (min-width: 768px) {
