@@ -67,7 +67,7 @@
   <section class="hero" aria-labelledby="hero-title">
     <div class="hero-inner">
       <div class="logo-mark">
-        <img src="/logo.svg" alt="HeBrews Coffee logo" class="hero-logo" />
+        <img src="{import.meta.env.BASE_URL}logo.svg" alt="HeBrews Coffee logo" class="hero-logo" />
       </div>
 
       <h1 class="hero-title" id="hero-title">HeBrews Coffee</h1>

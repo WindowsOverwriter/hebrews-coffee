@@ -5,7 +5,7 @@
 <nav class="navbar">
   <div class="navbar-inner">
     <a href="#/" class="navbar-brand" aria-label="HeBrews Coffee home">
-      <img src="/logo.svg" alt="" class="navbar-logo" />
+      <img src="{import.meta.env.BASE_URL}logo.svg" alt="" class="navbar-logo" />
       <span class="navbar-name">HeBrews</span>
     </a>
 
