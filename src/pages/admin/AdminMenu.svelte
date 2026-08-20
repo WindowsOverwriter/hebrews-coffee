@@ -2,7 +2,8 @@
   import { onMount } from 'svelte';
   import {
     getAdminMenu, createDrink, deleteDrink, setDrinkCustomizationTypes,
-    toggleDrink, toggleCustomization
+    toggleDrink, toggleCustomization,
+    createCustomization, updateCustomization, deleteCustomization
   } from '../../lib/api.js';
   import { ALL_CUSTOMIZATION_TYPES, CUSTOMIZATION_TYPE_LABELS } from '../../lib/constants.js';
 
@@ -17,6 +18,12 @@
   let newDrinkDesc = $state('');
   let newDrinkRatio = $state('');
   let addingDrink = $state(false);
+
+  // ─── Customization option CRUD state ───
+  let newOptionLabels = $state({});
+  let editingOptionId = $state(null);
+  let editingLabel = $state('');
+  let addingOptionType = $state(null);
 
   onMount(() => {
     loadMenu();
@@ -100,6 +107,59 @@
       menuError = e.message;
     }
     togglingId = null;
+  }
+
+  // ─── Customization option handlers ───
+  async function handleAddOption(type) {
+    const label = (newOptionLabels[type] || '').trim();
+    if (!label) return;
+    addingOptionType = type;
+    try {
+      await createCustomization(type, label);
+      newOptionLabels[type] = '';
+      menuError = '';
+      await loadMenu();
+    } catch (e) {
+      menuError = e.message;
+    }
+    addingOptionType = null;
+  }
+
+  function handleStartEditOption(opt) {
+    editingOptionId = opt.id;
+    editingLabel = opt.label;
+  }
+
+  function handleCancelEditOption() {
+    editingOptionId = null;
+    editingLabel = '';
+  }
+
+  async function handleSaveEditOption(opt) {
+    const label = editingLabel.trim();
+    if (!label || label === opt.label) {
+      handleCancelEditOption();
+      return;
+    }
+    try {
+      await updateCustomization(opt.id, { label });
+      menuError = '';
+      handleCancelEditOption();
+      await loadMenu();
+    } catch (e) {
+      menuError = e.message;
+    }
+  }
+
+  async function handleDeleteOption(opt) {
+    if (!confirm(`Delete "${opt.label}"? This cannot be undone.`)) return;
+    try {
+      await deleteCustomization(opt.id);
+      menuError = '';
+      await loadMenu();
+    } catch (e) {
+      menuError = e.message;
+    }
   }
 </script>
 
@@ -199,30 +259,89 @@
     </ul>
 
     <!-- Customization Options -->
-    {#each Object.entries(menuCustomizations) as [type, options]}
+    {#each ALL_CUSTOMIZATION_TYPES as type}
+      {@const options = menuCustomizations[type] || []}
       <h3 class="menu-heading">{CUSTOMIZATION_TYPE_LABELS[type] || type}</h3>
       <ul class="menu-list">
         {#each options as opt (opt.id)}
           <li class="menu-item-wrap">
-            <div class="menu-item" class:disabled={!opt.enabled}>
-              <div class="menu-item-info">
-                <span class="menu-item-name">{opt.label}</span>
-              </div>
-              <button
-                class="toggle-switch"
-                class:on={opt.enabled}
-                role="switch"
-                aria-checked={opt.enabled}
-                aria-label="Toggle {opt.label}"
-                disabled={togglingId === `opt-${opt.id}`}
-                onclick={() => handleToggleCustomization(opt)}
+            {#if editingOptionId === opt.id}
+              <form
+                class="menu-item edit-mode"
+                onsubmit={(e) => { e.preventDefault(); handleSaveEditOption(opt); }}
               >
-                <span class="toggle-knob"></span>
-              </button>
-            </div>
+                <input
+                  type="text"
+                  class="edit-input"
+                  bind:value={editingLabel}
+                  aria-label="Rename {opt.label}"
+                  maxlength="100"
+                />
+                <div class="menu-item-controls">
+                  <button type="submit" class="btn-inline">Save</button>
+                  <button
+                    type="button"
+                    class="btn-inline btn-inline-secondary"
+                    onclick={handleCancelEditOption}
+                  >Cancel</button>
+                </div>
+              </form>
+            {:else}
+              <div class="menu-item" class:disabled={!opt.enabled}>
+                <div class="menu-item-info">
+                  <span class="menu-item-name">{opt.label}</span>
+                </div>
+                <div class="menu-item-controls">
+                  <button
+                    class="btn-icon"
+                    onclick={() => handleStartEditOption(opt)}
+                    aria-label="Rename {opt.label}"
+                    title="Rename"
+                  >&#9998;</button>
+                  <button
+                    class="toggle-switch"
+                    class:on={opt.enabled}
+                    role="switch"
+                    aria-checked={opt.enabled}
+                    aria-label="Toggle {opt.label}"
+                    disabled={togglingId === `opt-${opt.id}`}
+                    onclick={() => handleToggleCustomization(opt)}
+                  >
+                    <span class="toggle-knob"></span>
+                  </button>
+                  <button
+                    class="btn-delete-sm"
+                    onclick={() => handleDeleteOption(opt)}
+                    aria-label="Delete {opt.label}"
+                  >&times;</button>
+                </div>
+              </div>
+            {/if}
           </li>
         {/each}
       </ul>
+
+      <form
+        class="add-option-form"
+        onsubmit={(e) => { e.preventDefault(); handleAddOption(type); }}
+        aria-label="Add {CUSTOMIZATION_TYPE_LABELS[type] || type} option"
+      >
+        <input
+          type="text"
+          class="add-option-input"
+          placeholder="New {CUSTOMIZATION_TYPE_LABELS[type] || type} option"
+          aria-label="New {CUSTOMIZATION_TYPE_LABELS[type] || type} option label"
+          bind:value={newOptionLabels[type]}
+          maxlength="100"
+        />
+        <button
+          type="submit"
+          class="btn btn-add-option"
+          disabled={addingOptionType === type || !(newOptionLabels[type] || '').trim()}
+        >
+          {addingOptionType === type ? 'Adding...' : 'Add'}
+        </button>
+      </form>
     {/each}
   {/if}
 </section>
@@ -490,5 +609,105 @@
 
   .expand-arrow.expanded {
     transform: rotate(180deg);
+  }
+
+  /* ─── Customization option edit / add ─── */
+  .menu-item.edit-mode {
+    gap: var(--spacing-sm);
+  }
+
+  .edit-input {
+    flex: 1;
+    min-width: 0;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid var(--color-brand-brown);
+    border-radius: var(--radius-md);
+    background: var(--color-white);
+    min-height: 36px;
+    font-size: 0.9375rem;
+    font-family: inherit;
+    color: var(--color-brand-brown);
+  }
+
+  .edit-input:focus {
+    outline: 2px solid var(--color-brand-brown);
+    outline-offset: 1px;
+  }
+
+  .btn-inline {
+    padding: 0 var(--spacing-md);
+    min-height: 36px;
+    border-radius: var(--radius-md);
+    background: var(--color-brand-brown);
+    color: var(--color-cream);
+    border: none;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+  }
+
+  .btn-inline-secondary {
+    background: none;
+    color: var(--color-brown-mid);
+    border: 1px solid var(--color-brown-light);
+  }
+
+  .btn-icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    background: none;
+    border: 1px solid var(--color-brown-light);
+    color: var(--color-brown-mid);
+    font-size: 1rem;
+    cursor: pointer;
+  }
+
+  .add-option-form {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-sm);
+    margin-bottom: var(--spacing-xl);
+    padding: var(--spacing-md);
+    background: var(--color-cream);
+    border-radius: var(--radius-md);
+    border: 1px dashed var(--color-brown-light);
+  }
+
+  .add-option-input {
+    flex: 1;
+    min-width: 0;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid var(--color-brown-light);
+    border-radius: var(--radius-md);
+    background: var(--color-white);
+    min-height: 40px;
+    font-size: 0.9375rem;
+    font-family: inherit;
+  }
+
+  .add-option-input:focus {
+    outline: 2px solid var(--color-brand-brown);
+    outline-offset: 1px;
+  }
+
+  .btn-add-option {
+    background: var(--color-brand-brown);
+    color: var(--color-cream);
+    padding: 0 var(--spacing-lg);
+    min-height: var(--min-tap-target);
+    border-radius: var(--radius-md);
+    border: none;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    cursor: pointer;
+  }
+
+  .btn-add-option:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 </style>

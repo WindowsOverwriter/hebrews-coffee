@@ -158,6 +158,29 @@ export async function toggleCustomization(id, enabled) {
   });
 }
 
+export async function createCustomization(type, label) {
+  return request('/api/admin/customizations', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ type, label })
+  });
+}
+
+export async function updateCustomization(id, patch) {
+  return request(`/api/admin/customizations/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify(patch)
+  });
+}
+
+export async function deleteCustomization(id) {
+  return request(`/api/admin/customizations/${id}`, {
+    method: 'DELETE',
+    headers: authHeaders()
+  });
+}
+
 export async function getSettings() {
   return request('/api/admin/settings', { headers: authHeaders() });
 }
