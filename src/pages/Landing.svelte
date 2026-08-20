@@ -71,7 +71,7 @@
       </div>
 
       <h1 class="hero-title" id="hero-title">HeBrews Coffee</h1>
-      <p class="hero-tagline">Freshly brewed, made to order.</p>
+      <p class="hero-tagline">Run by LDC volunteers</p>
 
       <div class="hero-ctas">
         <a href="#/order" class="cta cta-primary">Place an Order</a>
