@@ -199,17 +199,31 @@
         </button>
       {/if}
 
-      <!-- Directional chevrons -->
-      <div class="chevron chevron-left" aria-hidden="true">
+      <!-- Directional chevrons. Real buttons that step by 1 — they sit above
+           the far-neighbor buttons (which step by 2) so an arrow tap can't
+           fall through to the wrong handler. -->
+      <button
+        type="button"
+        class="chevron chevron-left"
+        tabindex="-1"
+        aria-hidden="true"
+        onclick={() => rotateBy(-1)}
+      >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="15 18 9 12 15 6"></polyline>
         </svg>
-      </div>
-      <div class="chevron chevron-right" aria-hidden="true">
+      </button>
+      <button
+        type="button"
+        class="chevron chevron-right"
+        tabindex="-1"
+        aria-hidden="true"
+        onclick={() => rotateBy(1)}
+      >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="9 6 15 12 9 18"></polyline>
         </svg>
-      </div>
+      </button>
 
       <!-- Highlight pill behind selected -->
       <div class="center-pill" aria-hidden="true"></div>
@@ -300,24 +314,43 @@
     pointer-events: none;
   }
 
-  /* Directional chevrons */
+  /* Directional chevrons — buttons stepping by 1. Sized to a 44px touch
+     target and given z-index above the neighbor buttons so they capture
+     the click instead of the far-prev/far-next (which step by 2). */
   .chevron {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    z-index: 4;
+    z-index: 5;
     color: var(--color-brown-light);
-    pointer-events: none;
     display: flex;
     align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: color 0.15s ease, background 0.15s ease;
+  }
+
+  .chevron:hover {
+    color: var(--color-brown-mid);
+    background: color-mix(in srgb, var(--color-brand-brown) 6%, transparent);
+  }
+
+  .chevron:active {
+    background: color-mix(in srgb, var(--color-brand-brown) 12%, transparent);
   }
 
   .chevron-left {
-    left: 10px;
+    left: 4px;
   }
 
   .chevron-right {
-    right: 10px;
+    right: 4px;
   }
 
   /* Cylinder items — horizontal layout */
