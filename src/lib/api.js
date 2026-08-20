@@ -142,6 +142,14 @@ export async function setDrinkCustomizationTypes(drinkId, types) {
   });
 }
 
+export async function setDrinkCustomizationOptions(drinkId, overrides) {
+  return request(`/api/admin/drinks/${drinkId}/customization-options`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ overrides })
+  });
+}
+
 export async function toggleDrink(id, enabled) {
   return request(`/api/admin/drinks/${id}`, {
     method: 'PATCH',

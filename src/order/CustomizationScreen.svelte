@@ -19,19 +19,21 @@
   let drinkTypes = $derived(drink.customization_types || []);
   let hasType = (type) => drinkTypes.length === 0 || drinkTypes.includes(type);
 
-  // Derive available options from customizations prop, filtered by drink's types
-  let temperatureOptions = $derived(
-    hasType('temperature') ? (customizations.temperature || []).map(c => c.label) : []
-  );
-  let espressoOptions = $derived(
-    hasType('espresso_type') ? (customizations.espresso_type || []).map(c => c.label) : []
-  );
-  let milkOptions = $derived(
-    hasType('milk_type') ? (customizations.milk_type || []).map(c => c.label) : []
-  );
-  let syrupOptions = $derived(
-    hasType('syrup') ? (customizations.syrup || []).map(c => c.label) : []
-  );
+  // Per-drink allowlist override: when the backend returns
+  // allowed_customization_options[type], only those option IDs apply to this
+  // drink. Absence of a type key means "all globally-enabled options apply".
+  function optionsFor(type) {
+    if (!hasType(type)) return [];
+    const all = customizations[type] || [];
+    const allowedIds = drink.allowed_customization_options?.[type];
+    const filtered = allowedIds ? all.filter(c => allowedIds.includes(c.id)) : all;
+    return filtered.map(c => c.label);
+  }
+
+  let temperatureOptions = $derived(optionsFor('temperature'));
+  let espressoOptions = $derived(optionsFor('espresso_type'));
+  let milkOptions = $derived(optionsFor('milk_type'));
+  let syrupOptions = $derived(optionsFor('syrup'));
   const SYRUP_NONE_LABEL = 'None';
   let syrupWheelOptions = $derived(
     syrupOptions.length ? [SYRUP_NONE_LABEL, ...syrupOptions] : []

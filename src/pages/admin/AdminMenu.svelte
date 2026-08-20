@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import {
     getAdminMenu, createDrink, deleteDrink, setDrinkCustomizationTypes,
+    setDrinkCustomizationOptions,
     toggleDrink, toggleCustomization,
     createCustomization, updateCustomization, deleteCustomization
   } from '../../lib/api.js';
@@ -24,6 +25,9 @@
   let editingOptionId = $state(null);
   let editingLabel = $state('');
   let addingOptionType = $state(null);
+
+  // Per-drink option allowlist state (key: `${drink.id}-${type}`)
+  let savingOptionOverride = $state(null);
 
   onMount(() => {
     loadMenu();
@@ -161,6 +165,49 @@
       menuError = e.message;
     }
   }
+
+  // ─── Per-drink option allowlist ───
+  function enabledOptionIdsForType(type) {
+    return (menuCustomizations[type] || []).filter(o => o.enabled).map(o => o.id);
+  }
+
+  function allowedIdsFor(drink, type) {
+    const override = drink.allowed_customization_options?.[type];
+    // Absence of an override means "all enabled options apply" — mirror the
+    // implicit set so checkboxes render pre-checked.
+    return new Set(override ?? enabledOptionIdsForType(type));
+  }
+
+  async function handleToggleAllowed(drink, type, optionId) {
+    const current = allowedIdsFor(drink, type);
+    const next = new Set(current);
+    if (next.has(optionId)) next.delete(optionId);
+    else next.add(optionId);
+
+    if (next.size === 0) {
+      menuError = 'Each active customization type needs at least one allowed option.';
+      return;
+    }
+
+    // If the resulting set covers every enabled option of this type, clear the
+    // override — same customer-facing result, less noise in storage.
+    const allEnabled = new Set(enabledOptionIdsForType(type));
+    const isFullSet = next.size === allEnabled.size && [...next].every(id => allEnabled.has(id));
+
+    const overrides = { ...(drink.allowed_customization_options || {}) };
+    if (isFullSet) delete overrides[type];
+    else overrides[type] = [...next];
+
+    savingOptionOverride = `${drink.id}-${type}`;
+    try {
+      await setDrinkCustomizationOptions(drink.id, overrides);
+      menuError = '';
+      await loadMenu();
+    } catch (e) {
+      menuError = e.message;
+    }
+    savingOptionOverride = null;
+  }
 </script>
 
 <section class="admin-section">
@@ -252,6 +299,33 @@
                   </button>
                 {/each}
               </div>
+
+              {#if (drink.customization_types || []).length > 0}
+                <p class="drink-options-label">Which options apply to this drink:</p>
+                {#each drink.customization_types as type}
+                  {@const typeOptions = (menuCustomizations[type] || []).filter(o => o.enabled)}
+                  {#if typeOptions.length > 0}
+                    {@const allowed = allowedIdsFor(drink, type)}
+                    {@const saving = savingOptionOverride === `${drink.id}-${type}`}
+                    <fieldset class="drink-options-group">
+                      <legend class="drink-options-heading">{CUSTOMIZATION_TYPE_LABELS[type] || type}</legend>
+                      <div class="drink-options-grid">
+                        {#each typeOptions as opt (opt.id)}
+                          <label class="option-check">
+                            <input
+                              type="checkbox"
+                              checked={allowed.has(opt.id)}
+                              disabled={saving}
+                              onchange={() => handleToggleAllowed(drink, type, opt.id)}
+                            />
+                            <span>{opt.label}</span>
+                          </label>
+                        {/each}
+                      </div>
+                    </fieldset>
+                  {/if}
+                {/each}
+              {/if}
             </div>
           {/if}
         </li>
@@ -609,6 +683,65 @@
 
   .expand-arrow.expanded {
     transform: rotate(180deg);
+  }
+
+  /* ─── Per-drink option allowlist ─── */
+  .drink-options-label {
+    font-size: 0.8125rem;
+    color: var(--color-brown-mid);
+    margin-top: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .drink-options-group {
+    border: 1px solid var(--color-brown-light);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    margin: 0 0 var(--spacing-sm);
+    background: var(--color-white);
+  }
+
+  .drink-options-heading {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-brand-brown);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0 var(--spacing-xs);
+  }
+
+  .drink-options-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-xs);
+  }
+
+  .option-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: var(--radius-full);
+    background: var(--color-cream);
+    color: var(--color-brown-mid);
+    font-size: 0.875rem;
+    cursor: pointer;
+    min-height: 36px;
+    user-select: none;
+  }
+
+  .option-check input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--color-brand-brown);
+    cursor: pointer;
+  }
+
+  .option-check:has(input:checked) {
+    background: color-mix(in srgb, var(--color-brand-brown) 10%, var(--color-cream));
+    color: var(--color-brand-brown);
+    font-weight: 600;
   }
 
   /* ─── Customization option edit / add ─── */
