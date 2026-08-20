@@ -125,7 +125,7 @@
 
     {#if espressoOptions.length > 0}
       <section class="option-group">
-        <h3 class="option-label">Espresso</h3>
+        <h3 class="option-label">Coffee</h3>
         <SegmentedToggle
           options={espressoOptions}
           value={espressoType}
@@ -150,7 +150,7 @@
 
     {#if syrupOptions.length > 0}
       <section class="option-group">
-        <h3 class="option-label" id="cust-syrup-label">Syrup</h3>
+        <h3 class="option-label" id="cust-syrup-label">Flavor</h3>
         <CylinderPicker
           options={syrupWheelOptions}
           value={syrupWheelValue}
