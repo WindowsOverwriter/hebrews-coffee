@@ -31,7 +31,7 @@
 <div class="segmented-toggle" role="radiogroup" aria-label={label}>
   <div
     class="slider"
-    style="width: calc({100 / options.length}% - {8 / options.length}px); transform: translateX(calc({activeIndex} * (100% + {8 / options.length}px)));"
+    style="width: calc({100 / options.length}% - {8 / options.length}px); transform: translateX({activeIndex * 100}%);"
   ></div>
   {#each options as option, i}
     <button

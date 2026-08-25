@@ -138,26 +138,44 @@
     {#if milkOptions.length > 0}
       <section class="option-group">
         <h3 class="option-label" id="cust-milk-label">Milk</h3>
-        <CylinderPicker
-          options={milkOptions}
-          value={milkType}
-          onChange={(v) => milkType = v}
-          label="Milk"
-          labelledBy="cust-milk-label"
-        />
+        {#if milkOptions.length >= 2 && milkOptions.length <= 4}
+          <SegmentedToggle
+            options={milkOptions}
+            value={milkType}
+            onChange={(v) => milkType = v}
+            label="Milk"
+          />
+        {:else}
+          <CylinderPicker
+            options={milkOptions}
+            value={milkType}
+            onChange={(v) => milkType = v}
+            label="Milk"
+            labelledBy="cust-milk-label"
+          />
+        {/if}
       </section>
     {/if}
 
     {#if syrupOptions.length > 0}
       <section class="option-group">
         <h3 class="option-label" id="cust-syrup-label">Flavor</h3>
-        <CylinderPicker
-          options={syrupWheelOptions}
-          value={syrupWheelValue}
-          onChange={handleSyrupChange}
-          label="Syrup"
-          labelledBy="cust-syrup-label"
-        />
+        {#if syrupWheelOptions.length >= 2 && syrupWheelOptions.length <= 4}
+          <SegmentedToggle
+            options={syrupWheelOptions}
+            value={syrupWheelValue}
+            onChange={handleSyrupChange}
+            label="Syrup"
+          />
+        {:else}
+          <CylinderPicker
+            options={syrupWheelOptions}
+            value={syrupWheelValue}
+            onChange={handleSyrupChange}
+            label="Syrup"
+            labelledBy="cust-syrup-label"
+          />
+        {/if}
         {#if syrup}
           <div class="pump-control">
             <span class="pump-label">Pumps</span>

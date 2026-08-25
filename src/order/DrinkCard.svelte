@@ -77,6 +77,11 @@
     color: var(--color-brown-mid);
     margin: 0;
     line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   @media (prefers-reduced-motion: reduce) {

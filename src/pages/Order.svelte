@@ -513,6 +513,9 @@
   .drink-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
+    /* Equalize row heights so cards in different rows don't jump between a
+       short (name-only) and tall (long ratio) sizing. */
+    grid-auto-rows: 1fr;
     gap: var(--spacing-md);
   }
 
