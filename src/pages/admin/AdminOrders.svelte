@@ -1,6 +1,9 @@
 <script>
   import { onMount } from 'svelte';
-  import { getAdminOrders, updateOrderStatus } from '../../lib/api.js';
+  import { getAdminOrders, getSettings, updateOrderStatus } from '../../lib/api.js';
+
+  const DEFAULT_SLOT_INTERVAL_MINUTES = 15;
+  const QUEUE_LOOKAHEAD_MULTIPLIER = 1.5;
 
   // ─── Orders state ───
   let orders = $state([]);
@@ -10,6 +13,10 @@
   let updatingOrderId = $state(null);
   let statusAnnouncement = $state('');
   let lookupQuery = $state('');
+  let slotIntervalMinutes = $state(DEFAULT_SLOT_INTERVAL_MINUTES);
+  let queueLookaheadMinutes = $derived(
+    Math.ceil((slotIntervalMinutes || DEFAULT_SLOT_INTERVAL_MINUTES) * QUEUE_LOOKAHEAD_MULTIPLIER)
+  );
   let receivedCount = $derived(orders.filter(o => o.status === 'received').length);
   let lookupMatches = $derived.by(() => {
     const q = lookupQuery.trim().toUpperCase();
@@ -25,6 +32,7 @@
   });
   onMount(() => {
     loadOrders();
+    loadSlotInterval();
   });
 
   // Poll orders every 15 seconds so the queue stays current
@@ -32,6 +40,21 @@
     const pollInterval = setInterval(loadOrders, 15000);
     return () => clearInterval(pollInterval);
   });
+
+  // The slot interval is edited on the Settings tab, so re-sync when this
+  // tab is remounted (which the shell does per-tab). No polling — a single
+  // fetch on mount is enough for a value that rarely changes.
+  async function loadSlotInterval() {
+    try {
+      const settings = await getSettings();
+      const parsed = parseInt(settings?.slot_interval_minutes, 10);
+      if (Number.isFinite(parsed) && parsed > 0) {
+        slotIntervalMinutes = parsed;
+      }
+    } catch {
+      // Fall back to DEFAULT_SLOT_INTERVAL_MINUTES; the queue still works.
+    }
+  }
 
   // ─── Orders logic ───
   async function loadOrders() {
@@ -61,13 +84,17 @@
     return now.getHours() * 60 + now.getMinutes();
   }
 
+  // Lookahead scales with the configured slot length so admins see the next
+  // slot's orders once they're halfway through the current one — 30-min
+  // slots → 45-min window, 15-min slots → ~23-min window — instead of a
+  // fixed 15-min horizon that hides bulk arrivals under a longer cadence.
   function getQueueOrders() {
-    const cutoff = getNowMinutes() + 15;
+    const cutoff = getNowMinutes() + queueLookaheadMinutes;
     return orders
       .filter(o => {
         if (o.status !== 'queued') return false;
         const slot = parseSlotMinutes(o.pickup_slot);
-        // Include if slot is within 15 min from now (or already past/unparseable)
+        // Include if slot is within the lookahead window (or already past/unparseable)
         return slot === null || slot <= cutoff;
       })
       .sort((a, b) => {
@@ -79,8 +106,8 @@
   }
 
   function getUpcomingCount() {
-    // Queued orders beyond the 15-min window
-    const cutoff = getNowMinutes() + 15;
+    // Queued orders beyond the lookahead window
+    const cutoff = getNowMinutes() + queueLookaheadMinutes;
     return orders.filter(o => {
       if (o.status !== 'queued') return false;
       const slot = parseSlotMinutes(o.pickup_slot);
