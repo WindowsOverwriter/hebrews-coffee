@@ -40,6 +40,16 @@
   const unsubscribeDrinks = drinks.subscribe(d => drinkList = d);
   const unsubscribeCustomizations = customizations.subscribe(c => customizationData = c);
 
+  // Reset scroll to top on every step transition. Svelte swaps views in place,
+  // so without this the previous view's scroll position is inherited — e.g.
+  // tapping a drink card lower in the menu grid would land the customization
+  // screen with its own header (and sometimes the first option) already
+  // scrolled behind the sticky NavBar.
+  $effect(() => {
+    step;
+    window.scrollTo(0, 0);
+  });
+
   onMount(() => {
     loadMenu();
     return () => {
