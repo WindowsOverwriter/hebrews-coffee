@@ -1,5 +1,6 @@
 <script>
   import { onMount, onDestroy, tick } from 'svelte';
+  import { authToken } from './stores/auth.js';
   import NavBar from './components/layout/NavBar.svelte';
 
   // Pages
@@ -63,7 +64,13 @@
 {:else if currentRoute === '#/admin'}
   <AdminLogin />
 {:else if currentRoute === '#/admin/dashboard'}
-  <AdminDashboard />
+  <!-- Guard at the routing layer: never mount the dashboard without a token.
+       Reactive, so a 401-cleared token drops the user back to login. -->
+  {#if $authToken}
+    <AdminDashboard />
+  {:else}
+    <AdminLogin />
+  {/if}
 {:else}
   <Landing />
 {/if}

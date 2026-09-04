@@ -139,6 +139,13 @@
     today.setHours(0, 0, 0, 0);
     return new Date(dateStr + 'T00:00:00') < today;
   }
+
+  // Local calendar date — toISOString() is UTC and jumps a day ahead in
+  // US evenings, which would block picking today.
+  function todayIso() {
+    const now = new Date();
+    return toIso(now.getFullYear(), now.getMonth(), now.getDate());
+  }
 </script>
 
 <section class="admin-section">
@@ -205,7 +212,7 @@
                   type="date"
                   value={loc.delete_after || ''}
                   onchange={(e) => handleSetDeleteAfter(loc, e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
+                  min={todayIso()}
                 />
                 {#if loc.delete_after}
                   <button class="btn btn-clear" onclick={() => handleSetDeleteAfter(loc, '')}>Clear</button>

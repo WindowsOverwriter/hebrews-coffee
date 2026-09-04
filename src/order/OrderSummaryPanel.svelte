@@ -1,10 +1,14 @@
 <script>
+  import { onDestroy } from 'svelte';
   import { getSlots, submitOrder } from '../lib/api.js';
   import { cart } from '../stores/cart.js';
   import { get } from 'svelte/store';
   import Dropdown from '../components/ui/Dropdown.svelte';
 
-  let { itemCount, onOrderPlaced, onAddMore, ordersAccepting = true } = $props();
+  let { itemCount, onOrderPlaced, onAddMore, onSubmittingChange, ordersAccepting = true } = $props();
+
+  let destroyed = false;
+  onDestroy(() => { destroyed = true; });
 
   let customerName = $state('');
   let phoneNumber = $state('');
@@ -45,7 +49,7 @@
 
   let isValid = $derived(
     customerName.trim().length > 0 &&
-    phoneNumber.trim().length > 0 &&
+    phoneNumber.replace(/\D/g, '').length === 10 &&
     pickupSlot.length > 0
   );
 
@@ -53,6 +57,7 @@
     if (!isValid || loading) return;
     error = '';
     loading = true;
+    onSubmittingChange?.(true);
 
     try {
       const items = get(cart);
@@ -73,15 +78,18 @@
         }))
       };
       const result = await submitOrder(payload);
+      if (destroyed) return;
       onOrderPlaced(result.confirmation_code);
     } catch (e) {
+      if (destroyed) return;
       if (e.status === 503) {
         error = 'Orders are currently closed. Please try again later.';
       } else {
         error = e.message || 'Failed to place order. Please try again.';
       }
     } finally {
-      loading = false;
+      if (!destroyed) loading = false;
+      onSubmittingChange?.(false);
     }
   }
 </script>
@@ -90,7 +98,7 @@
   <h3 class="summary-title">Order Summary</h3>
   <p class="item-count">{itemCount} {itemCount === 1 ? 'item' : 'items'}</p>
 
-  <button type="button" class="add-more-btn" onclick={onAddMore}>
+  <button type="button" class="add-more-btn" onclick={onAddMore} disabled={loading}>
     + Add another drink
   </button>
 
@@ -203,9 +211,14 @@
     transition: border-color 0.2s ease, color 0.2s ease;
   }
 
-  .add-more-btn:hover {
+  .add-more-btn:hover:not(:disabled) {
     border-color: var(--color-brand-brown);
     color: var(--color-brand-brown);
+  }
+
+  .add-more-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   .add-more-btn:focus-visible {

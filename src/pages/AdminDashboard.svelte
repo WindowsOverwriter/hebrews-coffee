@@ -1,6 +1,4 @@
 <script>
-  import { authToken } from '../stores/auth.js';
-  import { onMount } from 'svelte';
   import AdminOrders from './admin/AdminOrders.svelte';
   import AdminLocations from './admin/AdminLocations.svelte';
   import AdminMenu from './admin/AdminMenu.svelte';
@@ -18,12 +16,8 @@
   };
   let activeTab = $state('orders');
 
-  onMount(() => {
-    if (!$authToken) {
-      window.location.hash = '#/admin';
-      return;
-    }
-  });
+  // Auth is enforced at the routing layer (App.svelte) — this component
+  // only mounts with a token, and unmounts reactively if it's cleared.
 
   // C3: arrow-key navigation across the tablist (WAI-ARIA authoring practices)
   function handleTabKey(e, index) {

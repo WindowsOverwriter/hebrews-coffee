@@ -19,6 +19,7 @@
   let codeCopied = $state(false);
   let cartBounce = $state(false);
   let ordersAccepting = $state(true);
+  let submitting = $state(false);
 
   const loadingMessages = [
     'Brewing the menu...',
@@ -102,11 +103,13 @@
   }
 
   function handleBackToMenu() {
+    if (submitting) return;
     step = 'menu';
     selectedDrink = null;
   }
 
   function removeFromCart(index) {
+    if (submitting) return;
     let newLength;
     cart.update(items => {
       const next = items.filter((_, i) => i !== index);
@@ -144,6 +147,7 @@
   }
 
   function goToAddMore() {
+    if (submitting) return;
     step = 'menu';
   }
 
@@ -207,7 +211,7 @@
             <span class="bean bean-2"></span>
             <span class="bean bean-3"></span>
           </div>
-          <p class="loading-text" key={loadingMsgIndex}>{loadingMessages[loadingMsgIndex]}</p>
+          {#key loadingMsgIndex}<p class="loading-text">{loadingMessages[loadingMsgIndex]}</p>{/key}
         </div>
       {:else if error}
         <div class="center-message">
@@ -240,7 +244,7 @@
   {:else if step === 'cart'}
     <div class="cart-view step-enter">
       <header class="cart-header">
-        <button type="button" class="back-link" onclick={handleBackToMenu}>
+        <button type="button" class="back-link" onclick={handleBackToMenu} disabled={submitting}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="15 18 9 12 15 6"></polyline>
           </svg>
@@ -257,7 +261,7 @@
         </div>
       {:else}
         <div class="cart-layout">
-          <div class="cart-items">
+          <div class="cart-items" inert={submitting}>
             {#each cartItems as item, i (i)}
               <CartItemCard {item} index={i} onRemove={removeFromCart} />
             {/each}
@@ -268,6 +272,7 @@
               {ordersAccepting}
               onOrderPlaced={handleOrderPlaced}
               onAddMore={goToAddMore}
+              onSubmittingChange={(v) => submitting = v}
             />
           </div>
         </div>
@@ -564,8 +569,13 @@
     transition: color 0.15s ease;
   }
 
-  .back-link:hover {
+  .back-link:hover:not(:disabled) {
     color: var(--color-brand-brown);
+  }
+
+  .back-link:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   .back-link:focus-visible {
@@ -583,6 +593,10 @@
     display: flex;
     flex-direction: column;
     gap: var(--spacing-md);
+  }
+
+  .cart-items[inert] {
+    opacity: 0.6;
   }
 
   .cart-summary {

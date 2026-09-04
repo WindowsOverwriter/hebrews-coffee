@@ -57,12 +57,19 @@
   }
 
   // ─── Orders logic ───
+  // Monotonic token so overlapping fetches (15s poll vs. post-mutation
+  // refetch) can't apply out of order — only the latest-started request
+  // is allowed to write state; stale responses are dropped.
+  let loadOrdersSeq = 0;
   async function loadOrders() {
+    const seq = ++loadOrdersSeq;
     try {
       const data = await getAdminOrders();
+      if (seq !== loadOrdersSeq) return;
       orders = data.orders || [];
       ordersError = '';
     } catch (e) {
+      if (seq !== loadOrdersSeq) return;
       ordersError = e.message;
     }
     ordersLoading = false;

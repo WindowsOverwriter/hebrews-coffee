@@ -19,6 +19,12 @@ function authHeaders() {
 
 async function handleResponse(res) {
   if (!res.ok) {
+    // Expired/invalid JWT: drop the stale token so route guards send the
+    // user back to login instead of looping on a token that looks valid.
+    // (A failed login is also a 401, but there's no token yet — harmless.)
+    if (res.status === 401) {
+      authToken.set(null);
+    }
     const body = await res.json().catch(() => ({}));
     const err = new Error(body.error || `Request failed (${res.status})`);
     err.status = res.status;
