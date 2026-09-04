@@ -1,6 +1,7 @@
 <script>
   import { onDestroy } from 'svelte';
   import { getSlots, submitOrder } from '../lib/api.js';
+  import { isValidPhone } from '../lib/validation.js';
   import { cart } from '../stores/cart.js';
   import { get } from 'svelte/store';
   import Dropdown from '../components/ui/Dropdown.svelte';
@@ -49,7 +50,7 @@
 
   let isValid = $derived(
     customerName.trim().length > 0 &&
-    phoneNumber.replace(/\D/g, '').length === 10 &&
+    isValidPhone(phoneNumber) &&
     pickupSlot.length > 0
   );
 

@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import { getAdminOrders, getSettings, updateOrderStatus } from '../../lib/api.js';
+  import { createLatestWins } from '../../lib/latestWins.js';
 
   const DEFAULT_SLOT_INTERVAL_MINUTES = 15;
   const QUEUE_LOOKAHEAD_MULTIPLIER = 1.5;
@@ -60,16 +61,16 @@
   // Monotonic token so overlapping fetches (15s poll vs. post-mutation
   // refetch) can't apply out of order — only the latest-started request
   // is allowed to write state; stale responses are dropped.
-  let loadOrdersSeq = 0;
+  const ordersRequestGuard = createLatestWins();
   async function loadOrders() {
-    const seq = ++loadOrdersSeq;
+    const token = ordersRequestGuard.start();
     try {
       const data = await getAdminOrders();
-      if (seq !== loadOrdersSeq) return;
+      if (!ordersRequestGuard.isCurrent(token)) return;
       orders = data.orders || [];
       ordersError = '';
     } catch (e) {
-      if (seq !== loadOrdersSeq) return;
+      if (!ordersRequestGuard.isCurrent(token)) return;
       ordersError = e.message;
     }
     ordersLoading = false;

@@ -4,6 +4,7 @@
     getAdminLocations, createLocation, updateLocation,
     deleteLocation, setLocationDates
   } from '../../lib/api.js';
+  import { toIso, todayIso } from '../../lib/dates.js';
 
   // ─── Locations state ───
   let locations = $state([]);
@@ -93,10 +94,6 @@
     return new Date(year, month, 1).getDay();
   }
 
-  function toIso(year, month, day) {
-    return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-  }
-
   function prevMonth() {
     if (calendarMonth === 0) {
       calendarMonth = 11;
@@ -138,13 +135,6 @@
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     return new Date(dateStr + 'T00:00:00') < today;
-  }
-
-  // Local calendar date — toISOString() is UTC and jumps a day ahead in
-  // US evenings, which would block picking today.
-  function todayIso() {
-    const now = new Date();
-    return toIso(now.getFullYear(), now.getMonth(), now.getDate());
   }
 </script>
 
