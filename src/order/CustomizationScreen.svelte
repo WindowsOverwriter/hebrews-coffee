@@ -1,6 +1,7 @@
 <script>
   import SegmentedToggle from '../components/ui/SegmentedToggle.svelte';
   import CylinderPicker from '../components/ui/CylinderPicker.svelte';
+  import { optionLabelsFor } from '../lib/customizationOptions.js';
 
   let { drink, customizations, onAddToCart, onBack } = $props();
 
@@ -15,19 +16,13 @@
   const SYRUP_PUMPS_DEFAULT = 2;
   const SYRUP_PUMPS_MAX = 6;
 
-  // Only show customization types attached to this drink (fall back to all if none set)
-  let drinkTypes = $derived(drink.customization_types || []);
-  let hasType = (type) => drinkTypes.length === 0 || drinkTypes.includes(type);
-
-  // Per-drink allowlist override: when the backend returns
-  // allowed_customization_options[type], only those option IDs apply to this
-  // drink. Absence of a type key means "all globally-enabled options apply".
+  // Only the customization types attached to this drink are shown. An empty
+  // list means the drink has no customizations at all (no fallback to "all"),
+  // so an admin detaching the last type is reflected here. Within a type, the
+  // per-drink allowlist narrows the globally-enabled options. See
+  // src/lib/customizationOptions.js.
   function optionsFor(type) {
-    if (!hasType(type)) return [];
-    const all = customizations[type] || [];
-    const allowedIds = drink.allowed_customization_options?.[type];
-    const filtered = allowedIds ? all.filter(c => allowedIds.includes(c.id)) : all;
-    return filtered.map(c => c.label);
+    return optionLabelsFor(drink, customizations, type);
   }
 
   let temperatureOptions = $derived(optionsFor('temperature'));

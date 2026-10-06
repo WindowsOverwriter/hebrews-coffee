@@ -28,6 +28,10 @@
 
   // Per-drink option allowlist state (key: `${drink.id}-${type}`)
   let savingOptionOverride = $state(null);
+  // Allowlist errors render inside the drink's own panel (keyed by drink id).
+  // The top-of-tab menuError is off screen when a panel far down the list is
+  // expanded, which made a refused/failed save look like it had applied.
+  let panelErrors = $state({});
 
   onMount(() => {
     loadMenu();
@@ -178,14 +182,24 @@
     return new Set(override ?? enabledOptionIdsForType(type));
   }
 
-  async function handleToggleAllowed(drink, type, optionId) {
+  async function handleToggleAllowed(e, drink, type, optionId) {
+    const checkbox = e.currentTarget;
     const current = allowedIdsFor(drink, type);
     const next = new Set(current);
     if (next.has(optionId)) next.delete(optionId);
     else next.add(optionId);
 
+    // The checkbox is one-way bound, so on any path that does not save we
+    // must put the native control back to the last saved state ourselves.
+    // Otherwise the browser keeps showing the unsaved toggle until reload.
+    const revert = () => { checkbox.checked = current.has(optionId); };
+
     if (next.size === 0) {
-      menuError = 'Each active customization type needs at least one allowed option.';
+      const typeLabel = CUSTOMIZATION_TYPE_LABELS[type] || type;
+      panelErrors[drink.id] =
+        `At least one ${typeLabel} option must stay allowed. ` +
+        `To remove ${typeLabel} from this drink entirely, turn off its "${typeLabel}" type chip above.`;
+      revert();
       return;
     }
 
@@ -201,10 +215,11 @@
     savingOptionOverride = `${drink.id}-${type}`;
     try {
       await setDrinkCustomizationOptions(drink.id, overrides);
-      menuError = '';
+      delete panelErrors[drink.id];
       await loadMenu();
-    } catch (e) {
-      menuError = e.message;
+    } catch (err) {
+      panelErrors[drink.id] = err.message;
+      revert();
     }
     savingOptionOverride = null;
   }
@@ -262,7 +277,7 @@
                 <span class="menu-item-name">{drink.name}</span>
                 <span class="menu-item-desc">{drink.ratio_summary || drink.description}</span>
                 <span class="menu-item-types">
-                  {(drink.customization_types || []).map(t => CUSTOMIZATION_TYPE_LABELS[t] || t).join(', ') || 'No customizations'}
+                  {(drink.customization_types || []).map(t => CUSTOMIZATION_TYPE_LABELS[t] || t).join(', ') || 'No customizations (customers see none)'}
                 </span>
               </div>
               <span class="expand-arrow" class:expanded={expandedDrinkId === drink.id}>&#9660;</span>
@@ -302,6 +317,9 @@
 
               {#if (drink.customization_types || []).length > 0}
                 <p class="drink-options-label">Which options apply to this drink:</p>
+                {#if panelErrors[drink.id]}
+                  <p class="error panel-error" role="alert">{panelErrors[drink.id]}</p>
+                {/if}
                 {#each drink.customization_types as type}
                   {@const typeOptions = (menuCustomizations[type] || []).filter(o => o.enabled)}
                   {#if typeOptions.length > 0}
@@ -316,7 +334,7 @@
                               type="checkbox"
                               checked={allowed.has(opt.id)}
                               disabled={saving}
-                              onchange={() => handleToggleAllowed(drink, type, opt.id)}
+                              onchange={(e) => handleToggleAllowed(e, drink, type, opt.id)}
                             />
                             <span>{opt.label}</span>
                           </label>
@@ -690,6 +708,10 @@
     font-size: 0.8125rem;
     color: var(--color-brown-mid);
     margin-top: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .panel-error {
     margin-bottom: var(--spacing-sm);
   }
 
