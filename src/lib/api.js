@@ -114,6 +114,10 @@ export async function getTrends() {
   return request('/api/admin/trends', { headers: authHeaders() });
 }
 
+export async function getPeriodExport() {
+  return request('/api/admin/period/export', { headers: authHeaders() });
+}
+
 export async function resetPeriod() {
   return request('/api/admin/period/reset', {
     method: 'POST',

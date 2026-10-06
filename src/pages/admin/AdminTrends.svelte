@@ -2,7 +2,8 @@
   import { onDestroy } from 'svelte';
   import { Chart, BarController, CategoryScale, LinearScale, BarElement, Tooltip, Legend } from 'chart.js';
   Chart.register(BarController, CategoryScale, LinearScale, BarElement, Tooltip, Legend);
-  import { getTrends, resetPeriod } from '../../lib/api.js';
+  import { getTrends, resetPeriod, getPeriodExport } from '../../lib/api.js';
+  import { downloadJson, exportFilename } from '../../lib/download.js';
   import { CUSTOMIZATION_TYPE_LABELS } from '../../lib/constants.js';
 
   // Called after a period reset so the Orders tab is rebuilt from fresh data.
@@ -15,6 +16,12 @@
   let trendsError = $state('');
   let resetting = $state(false);
   let resetResult = $state('');
+  // End Session is a two-step flow: preview the export (read-only), then
+  // confirm the delete. The export JSON is the only record that survives.
+  let endSessionStep = $state('idle'); // 'idle' | 'loading' | 'confirm' | 'done'
+  let pendingExport = $state(null);    // preview from GET /period/export
+  let finalExport = $state(null);      // copy returned by the reset itself
+  let endSessionError = $state('');
   let chartCanvas = $state(null);
   let chartInstance = null;
 
@@ -93,17 +100,43 @@
   }
 
   async function handleEndSession() {
-    if (!confirm('End this session? This will:\n\n- Export all order data (anonymized) to the server\n- Strip personal info from the database\n- Start a new period\n\nThis cannot be undone.')) return;
-    resetting = true;
+    endSessionError = '';
     resetResult = '';
+    endSessionStep = 'loading';
+    try {
+      pendingExport = await getPeriodExport();
+      endSessionStep = 'confirm';
+    } catch (e) {
+      endSessionError = e.message;
+      endSessionStep = 'idle';
+    }
+  }
+
+  function handleCancelEndSession() {
+    pendingExport = null;
+    endSessionStep = 'idle';
+  }
+
+  function handleDownload(exportData) {
+    if (!exportData) return;
+    downloadJson(exportFilename(exportData), exportData);
+  }
+
+  async function handleConfirmEndSession() {
+    resetting = true;
+    endSessionError = '';
     try {
       const data = await resetPeriod();
-      resetResult = `${data.message} (${data.total_orders} orders exported to ${data.export_file})`;
+      finalExport = data.export || null;
+      pendingExport = null;
+      resetResult = `Session ended. ${data.total_orders} order${data.total_orders === 1 ? '' : 's'} deleted.`;
+      endSessionStep = 'done';
       trendsData = null;
       if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
       onOrdersInvalidated?.();
     } catch (e) {
-      trendsError = e.message;
+      endSessionError = e.message;
+      endSessionStep = 'confirm';
     }
     resetting = false;
   }
@@ -161,15 +194,64 @@
     <!-- End Session -->
     <div class="end-session">
       <h3 class="menu-heading">End Session</h3>
-      <p class="end-session-desc">Export anonymized order data to the server and start a fresh period. Personal information will be stripped from the database.</p>
-      {#if resetResult}
-        <p class="end-session-result">{resetResult}</p>
+      <p class="end-session-desc">
+        Ending the session permanently deletes every order from the current period
+        and starts a fresh one. The JSON download offered here is the only record
+        of those orders; it contains no customer names, phone numbers, or
+        confirmation codes.
+      </p>
+
+      {#if endSessionError}
+        <p class="error" role="alert">{endSessionError}</p>
       {/if}
-      <button
-        class="btn btn-end-session"
-        disabled={resetting}
-        onclick={handleEndSession}
-      >{resetting ? 'Exporting...' : 'End Session & Export'}</button>
+
+      {#if endSessionStep === 'confirm' && pendingExport}
+        {@const n = pendingExport.summary?.total_orders ?? pendingExport.orders?.length ?? 0}
+        <div class="end-session-confirm" role="dialog" aria-modal="false" aria-labelledby="end-session-confirm-title">
+          <p id="end-session-confirm-title" class="end-session-confirm-title">
+            This will permanently delete {n} order{n === 1 ? '' : 's'} from the current session.
+          </p>
+          <p class="end-session-confirm-text">
+            Download a copy first if you want to keep a record. This cannot be undone.
+          </p>
+          <div class="end-session-actions">
+            <button type="button" class="btn btn-download" onclick={() => handleDownload(pendingExport)}>
+              Download JSON
+            </button>
+            <button
+              type="button"
+              class="btn btn-end-session"
+              disabled={resetting}
+              onclick={handleConfirmEndSession}
+            >{resetting ? 'Deleting...' : 'End session and delete orders'}</button>
+            <button type="button" class="btn btn-cancel" disabled={resetting} onclick={handleCancelEndSession}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      {:else if endSessionStep === 'done'}
+        <p class="end-session-result" role="status">{resetResult}</p>
+        {#if finalExport}
+          <p class="end-session-confirm-text">
+            This is the last copy of that session's data. Download it now if you have not already.
+          </p>
+          <div class="end-session-actions">
+            <button type="button" class="btn btn-download" onclick={() => handleDownload(finalExport)}>
+              Download JSON
+            </button>
+            <button type="button" class="btn btn-cancel" onclick={() => { finalExport = null; endSessionStep = 'idle'; }}>
+              Done
+            </button>
+          </div>
+        {/if}
+      {:else}
+        <button
+          type="button"
+          class="btn btn-end-session"
+          disabled={endSessionStep === 'loading'}
+          onclick={handleEndSession}
+        >{endSessionStep === 'loading' ? 'Preparing...' : 'End Session'}</button>
+      {/if}
     </div>
   {/if}
 </section>
@@ -360,5 +442,51 @@
 
   .btn-end-session:disabled {
     opacity: 0.5;
+  }
+
+  .end-session-confirm {
+    background: var(--color-cream);
+    border: 2px solid var(--color-brand-brown);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .end-session-confirm-title {
+    color: var(--color-brand-brown);
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .end-session-confirm-text {
+    color: var(--color-brown-mid);
+    font-size: 0.9375rem;
+    margin-bottom: var(--spacing-md);
+  }
+
+  .end-session-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  @media (min-width: 600px) {
+    .end-session-actions {
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+  }
+
+  .btn-download {
+    background: var(--color-brand-brown);
+    color: var(--color-cream);
+    border: none;
+  }
+
+  .btn-cancel {
+    background: var(--color-white);
+    color: var(--color-brand-brown);
+    border: 1px solid var(--color-brown-light);
   }
 </style>
