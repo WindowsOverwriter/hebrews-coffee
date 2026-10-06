@@ -3,7 +3,7 @@
   import {
     getAdminMenu, createDrink, deleteDrink, setDrinkCustomizationTypes,
     setDrinkCustomizationOptions,
-    toggleDrink, toggleCustomization,
+    toggleDrink, updateDrink, toggleCustomization,
     createCustomization, updateCustomization, deleteCustomization
   } from '../../lib/api.js';
   import { ALL_CUSTOMIZATION_TYPES, CUSTOMIZATION_TYPE_LABELS } from '../../lib/constants.js';
@@ -19,6 +19,13 @@
   let newDrinkDesc = $state('');
   let newDrinkRatio = $state('');
   let addingDrink = $state(false);
+
+  // ─── Drink edit state ───
+  let editingDrinkId = $state(null);
+  let editDrinkName = $state('');
+  let editDrinkDesc = $state('');
+  let editDrinkRatio = $state('');
+  let savingDrink = $state(false);
 
   // ─── Customization option CRUD state ───
   let newOptionLabels = $state({});
@@ -115,6 +122,51 @@
       menuError = e.message;
     }
     togglingId = null;
+  }
+
+  // ─── Drink edit handlers ───
+  function handleStartEditDrink(drink) {
+    editingDrinkId = drink.id;
+    editDrinkName = drink.name || '';
+    editDrinkDesc = drink.description || '';
+    editDrinkRatio = drink.ratio_summary || '';
+    expandedDrinkId = null;
+  }
+
+  function handleCancelEditDrink() {
+    editingDrinkId = null;
+    editDrinkName = '';
+    editDrinkDesc = '';
+    editDrinkRatio = '';
+  }
+
+  async function handleSaveEditDrink(drink) {
+    const name = editDrinkName.trim();
+    if (!name) {
+      menuError = 'Drink name is required.';
+      return;
+    }
+    // Send only what changed; nothing changed is just a cancel.
+    const patch = {};
+    if (name !== (drink.name || '')) patch.name = name;
+    const desc = editDrinkDesc.trim();
+    if (desc !== (drink.description || '')) patch.description = desc;
+    const ratio = editDrinkRatio.trim();
+    if (ratio !== (drink.ratio_summary || '')) patch.ratio_summary = ratio;
+    if (Object.keys(patch).length === 0) {
+      handleCancelEditDrink();
+      return;
+    }
+    savingDrink = true;
+    try {
+      await updateDrink(drink.id, patch);
+      menuError = '';
+      handleCancelEditDrink();
+      await loadMenu();
+    } catch (e) {
+      menuError = e.message;  // stay in edit mode so nothing typed is lost
+    }
+    savingDrink = false;
   }
 
   // ─── Customization option handlers ───
@@ -266,6 +318,50 @@
     <ul class="menu-list">
       {#each menuDrinks as drink (drink.id)}
         <li class="menu-item-wrap">
+          {#if editingDrinkId === drink.id}
+            <form
+              class="menu-item edit-mode drink-edit-form"
+              aria-label="Edit {drink.name}"
+              onsubmit={(e) => { e.preventDefault(); handleSaveEditDrink(drink); }}
+            >
+              <div class="drink-edit-fields">
+                <input
+                  type="text"
+                  class="edit-input"
+                  bind:value={editDrinkName}
+                  aria-label="Drink name"
+                  placeholder="Drink name"
+                  maxlength="100"
+                  required
+                />
+                <input
+                  type="text"
+                  class="edit-input"
+                  bind:value={editDrinkDesc}
+                  aria-label="Drink description"
+                  placeholder="Description"
+                />
+                <input
+                  type="text"
+                  class="edit-input"
+                  bind:value={editDrinkRatio}
+                  aria-label="Ratio summary shown on menu card"
+                  placeholder="Ratio summary (shown on menu card)"
+                />
+              </div>
+              <div class="menu-item-controls drink-edit-actions">
+                <button type="submit" class="btn-inline btn-inline-tall" disabled={savingDrink || !editDrinkName.trim()}>
+                  {savingDrink ? 'Saving...' : 'Save'}
+                </button>
+                <button
+                  type="button"
+                  class="btn-inline btn-inline-secondary btn-inline-tall"
+                  disabled={savingDrink}
+                  onclick={handleCancelEditDrink}
+                >Cancel</button>
+              </div>
+            </form>
+          {:else}
           <div class="menu-item" class:disabled={!drink.enabled}>
             <button
               class="menu-item-expand"
@@ -283,6 +379,12 @@
               <span class="expand-arrow" class:expanded={expandedDrinkId === drink.id}>&#9660;</span>
             </button>
             <div class="menu-item-controls">
+              <button
+                class="btn-icon"
+                onclick={() => handleStartEditDrink(drink)}
+                aria-label="Edit {drink.name}"
+                title="Edit"
+              >&#9998;</button>
               <button
                 class="toggle-switch"
                 class:on={drink.enabled}
@@ -345,6 +447,7 @@
                 {/each}
               {/if}
             </div>
+          {/if}
           {/if}
         </li>
       {/each}
@@ -799,6 +902,28 @@
     font-weight: 600;
     font-size: 0.875rem;
     cursor: pointer;
+  }
+
+  /* ─── Drink edit form ─── */
+  .drink-edit-form {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-sm);
+  }
+
+  .drink-edit-fields {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  .drink-edit-actions {
+    justify-content: flex-end;
+  }
+
+  .btn-inline-tall {
+    min-height: var(--min-tap-target);
+    padding: 0 var(--spacing-lg);
   }
 
   .btn-inline-secondary {

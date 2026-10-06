@@ -168,6 +168,15 @@ export async function toggleDrink(id, enabled) {
   });
 }
 
+// Partial update: any of { name, description, ratio_summary, enabled }.
+export async function updateDrink(id, patch) {
+  return request(`/api/admin/drinks/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify(patch)
+  });
+}
+
 export async function toggleCustomization(id, enabled) {
   return request(`/api/admin/customizations/${id}`, {
     method: 'PATCH',
